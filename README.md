@@ -1,95 +1,193 @@
-# Obsidian Sample Plugin
+# Obsidian - RunJS
 
-This is a sample plugin for Obsidian (https://obsidian.md).
+*Let's run JavaScript easily and simply in Obsidian.*
 
-This project uses Typescript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in Typescript Definition format, which contains TSDoc comments describing what it does.
+RunJS is a plugin for running JavaScript code in [Obsidian](https://obsidian.md/). You can directly run trivial(?) code snippets without having to create a separate plugin. But, like any other plugin, you can run code that manages Obsidian and notes. Codes is written as codeblocks (.md) in Obsidian Notes or as separate files (.js, .mjs). You also have the option to break down your code into executable code and modules to give you better organization.
 
-**Note:** The Obsidian API is still in early alpha and is subject to change at any time!
+![](images/Obsidian_RunJS_FrontMatter_test_1600.gif)<p ><small>This is a simple usage example. Click on a command(Toggle cssclass width-100) in the Codelist View. Then add "width-100" value to cssclass in frontmatter. The style saved in CSS Snippets is applied, making note wider. Clicking on it again removes the "width-100" value and the width of the note returns to its original width. Run "Open code file" command and you can see the code. Then you can modify it.</small></p>
 
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open Sample Modal" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and output 'click' to the console.
-- Registers a global interval which logs 'setInterval' to the console.
 
-## First time developing plugins?
+**Caution**:  
+*Codes can do the same thing as other plugins. So bad code can potentially disrupt Obsidian or corrupt notes. It is important to ensure that the code is safe before executing it.*
 
-Quick starting guide for new plugin devs:
 
-- Check if [someone already developed a plugin for what you want](https://obsidian.md/plugins)! There might be an existing plugin similar enough that you can partner up with.
-- Make a copy of this repo as a template with the "Use this template" button (login to GitHub if you don't see it).
-- Clone your repo to a local development folder. For convenience, you can place this folder in your `.obsidian/plugins/your-plugin-name` folder.
-- Install NodeJS, then run `npm i` in the command line under your repo folder.
-- Run `npm run dev` to compile your plugin from `main.ts` to `main.js`.
-- Make changes to `main.ts` (or create new `.ts` files). Those changes should be automatically compiled into `main.js`.
-- Reload Obsidian to load the new version of your plugin.
-- Enable plugin in settings window.
-- For updates to the Obsidian API run `npm update` in the command line under your repo folder.
+## Features
 
-## Releasing new releases
+- **Runs**: There are multiple ways to run code.
+	- **Codelist View**: You can view all code lists. Then run code or view code with one click.
+	- **Run Code Modal**: Select a code in a hierarchical structure of code groups and then run it.
+	- **Autostart**: Run code automatically when RunJS is loaded.
+	- **Add command**: Add a command to be executed to command palette. Then you can additionally set a Hotkey on it.
+	- **Add Ribbon icon**: Add an icon to Ribbon to run code right away.
 
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
-- Publish the release.
+- **Code types**: JavaScript module system is available.
+	- **script**: code set to t:"s" (default) or .js file
+	- **module**: code set to t:"m" or .mjs file
 
-> You can simplify the version bump process by running `npm version patch`, `npm version minor` or `npm version major` after updating `minAppVersion` manually in `manifest.json`.
-> The command will bump version in `manifest.json` and `package.json`, and add the entry for the new version to `versions.json`
 
-## Adding your plugin to the community plugin list
+## Start - Hello, World!
 
-- Check https://github.com/obsidianmd/obsidian-releases/blob/master/plugin-review.md
-- Publish an initial version.
-- Make sure you have a `README.md` file in the root of your repo.
-- Make a pull request at https://github.com/obsidianmd/obsidian-releases to add your plugin.
+````markdown
+```js RunJS:"Test/Hello, World!"
+new Notice("Hello, World!");
+```
+or
+```js RunJS:{n:"Test/Hello, World!",t:"s"}
+new Notice("Hello, World!");
+```
+````
 
-## How to use
+![](images/Obsidian_hello_800.gif)
 
-- Clone this repo.
-- `npm i` or `yarn` to install dependencies
-- `npm run dev` to start compilation in watch mode.
 
-## Manually installing the plugin
+## Useful starter codes
 
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
+```js
+// Using obsidian
+import * as obsidian from 'obsidian';
 
-## Improve code quality with eslint (optional)
-- [ESLint](https://eslint.org/) is a tool that analyzes your code to quickly find problems. You can run ESLint against your plugin to find common bugs and ways to improve your code. 
-- To use eslint with this project, make sure to install eslint from terminal:
-  - `npm install -g eslint`
-- To use eslint to analyze this project use this command:
-  - `eslint main.ts`
-  - eslint will then create a report with suggestions for code improvement by file and line number.
-- If your source code is in a folder, such as `src`, you can use eslint with this command to analyze all files in that folder:
-  - `eslint .\src\`
+// this plugin
+const runJS = app.plugins.plugins["runjs"];
 
-## Funding URL
+// Using other plugins
+const dailyNotes = app.internalPlugins.plugins["daily-notes"];
+const dataviewAPI = app.plugins.plugins["dataview"].api;
+const templater = app.plugins.plugins["templater-obsidian"].templater;
 
-You can include funding URLs where people who use your plugin can financially support it.
+// Using other module
+const url = require('url');
+```
 
-The simple way is to set the `fundingUrl` field to your link in your `manifest.json` file:
 
-```json
-{
-    "fundingUrl": "https://buymeacoffee.com"
+## References for writing codes
+
+- Home - Developer Documentation
+  https://docs.obsidian.md/Home
+- obsidianmd/obsidian-api: Type definitions for the latest Obsidian API.
+  https://github.com/obsidianmd/obsidian-api
+- Obsidian Plugin Developer Docs | Obsidian Plugin Developer Docs
+  https://marcus.se.net/obsidian-plugin-docs/
+
+
+## Examples
+
+### Obsidian Icon list
+
+Continuing from the example above ("Hello, World!"), write the following code in another code block. Then refresh the code list and you will see the new code. Then click it to run.
+
+````markdown
+```js RunJS:{n:"Obsidian/Open icon modal",t:"s"}
+const runJS = app.plugins.plugins["runjs"];
+runJS.openIconModal();
+```
+````
+
+![](images/Obsidian_icon_modal.gif)
+
+### Scripts & Modules
+
+The following shows examples of creating and using code with scripts and modules.
+Scripts named "code 1" and "code 2" are shown in the list. In addition to its own executable code, this script uses functions from "module 1", "module 2", and "module 3".
+The execution result is written in the log file(the file set in the plugin settings).
+
+test.md - Scripts and modules can be put in a code block, either together in a single file or split into multiple files.
+
+````markdown
+
+```js RunJS:{n:"Test/code 1", t:"s"}
+import { Notice } from 'obsidian';
+import { myFunc1 } from 'Test/module 1'; // codeblock: pages/test.md
+import { myFunc2 } from 'Test/module 2'; // file: ./testFolder/module 2.mjs
+import { myFunc3 } from './testFolder/module 3.mjs'; // file
+
+new Notice("[code 1] Hello, World!");
+console.log("[code 1] Hello, World!");
+this.log("info", "[code 1]", "Hello, World!");
+
+myFunc1("[code 1] Run module func1.");
+myFunc2("[code 1] Run module func2.");
+myFunc3("[code 1] Run module func3.");
+```
+
+```js RunJS:{n:"Test/module 1", t:"m"}
+export function myFunc1(...args) {
+  let runJS = app.plugins.plugins["runjs"];
+  runJS.log("info", "module 1:", ...args);
+  console.log("module 1:", ...args);
 }
 ```
 
-If you have multiple URLs, you can also do:
+````
 
-```json
-{
-    "fundingUrl": {
-        "Buy Me a Coffee": "https://buymeacoffee.com",
-        "GitHub Sponsor": "https://github.com/sponsors",
-        "Patreon": "https://www.patreon.com/"
-    }
+
+Scripts_RunJS/testFolder/test.js - Script(.js file) saved in the script file storage folder set in the plugin settings
+
+```js
+/**
+ * js file - script. executable code
+ * 
+ * @RunJS {n:"Test/code 2"}
+ */
+import { myFunc1 } from 'Test/module 1'; // codeblock: pages/test.md
+import { myFunc2 } from 'Test/module 2'; // file: ./testFolder/module 2.mjs
+import { myFunc3 } from './module 3.mjs'; // file: ./testFolder/module 3.mjs
+
+console.log("[code 2] Hello, World!");
+this.log("error", "[code 2] Hello, World!");
+
+myFunc1("[code 2] Run module func1.");
+myFunc2("[code 2] Run module func2.");
+myFunc3("[code 2] Run module func3.");
+```
+
+
+Scripts_RunJS/testFolder/module 2.mjs - module file
+
+```js
+/**
+ * mjs file - module
+ * 
+ * @RunJS {n:"Test/module 2"}
+ */
+import { Notice } from 'obsidian';
+
+export function myFunc2(...args) {
+  new Notice("module 2:" + args.join(", "));
+  console.log("module 2:",...args);
 }
 ```
 
-## API Documentation
 
-See https://github.com/obsidianmd/obsidian-api
+Scripts_RunJS/testFolder/module 3.mjs - module file
+
+```js
+/**
+ * mjs file - module
+ * 
+ * X@RunJS {n:"group/module 3"} // not use name
+ */
+import { Notice } from 'obsidian';
+
+export function myFunc3(...args) {
+  new Notice("module 3:" + args.join(", "));
+  console.log("module 3:",...args);
+}
+```
+
+You can see the above codes running in the image below.
+
+![](images/Obsidian_test_1600.gif)
+
+
+## Settingtab
+
+Here is the RunJS settings dialog.
+
+![](images/RunJS_settingtab.png)
+
+## Donate
+
+If you like this plugin, consider donating to support continued development.
+
+<a href="https://www.buymeacoffee.com/eoureo" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>  
+<a href="https://www.buymeacoffee.com/eoureo" target="_blank"><img src="images/bmc_qr_box.png" alt="Buy Me A Coffee" style="width: 217px !important;" ></a>  
