@@ -17,7 +17,7 @@ export class ConfirmModal extends Modal {
     onOpen() {
         this.containerEl.addClass("runjs-confirm-modal");
         
-        let { contentEl } = this;
+        const { contentEl } = this;
 
         contentEl.empty();
 
@@ -44,7 +44,7 @@ export class ConfirmModal extends Modal {
     
     onClose() {
         this.callback(false);
-        let { contentEl } = this;
+        const { contentEl } = this;
         contentEl.empty();
     }
 }
@@ -82,35 +82,37 @@ export default class ConfirmDeleteModal extends Modal {
     onOpen() {
         this.containerEl.addClass("runjs-confirm-modal");
 
-        let { contentEl } = this;
+        const { contentEl } = this;
 
         contentEl.empty();
-        
-        let containerEl = contentEl.parentElement;
 
         if (this.title) this.titleEl.setText(this.title);
 
         contentEl.createEl("p").setText(this.message);
+        
+        const containerEl = contentEl.parentElement;
 
-        const buttonDiv = containerEl.createDiv({cls: "modal-button-container"});
+        if (containerEl) {
+            const buttonDiv = containerEl.createDiv({cls: "modal-button-container"});
 
-        new ButtonComponent(buttonDiv)
-            .setButtonText("Delete")
-            .setClass("mod-warning")
-            .onClick(() => {
-                this.callback(true);
+            new ButtonComponent(buttonDiv)
+                .setButtonText("Delete")
+                .setClass("mod-warning")
+                .onClick(() => {
+                    this.callback(true);
+                    this.close();
+                })
+                .setCta();
+
+            new ButtonComponent(buttonDiv).setButtonText("Cancel").onClick(() => {
+                this.callback(false);
                 this.close();
-            })
-            .setCta();
-
-        new ButtonComponent(buttonDiv).setButtonText("Cancel").onClick(() => {
-            this.callback(false);
-            this.close();
-        });
+            });
+        }
     }
     
     onClose() {
-        let { contentEl } = this;
+        const { contentEl } = this;
         contentEl.empty();
     }
 }

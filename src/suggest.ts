@@ -5,8 +5,10 @@ import { Code } from "./main";
 /**
  * Represents a text input suggest popover.
  */
-export class TextInputPopoverSuggest extends PopoverSuggest {
+export class TextInputPopoverSuggest extends PopoverSuggest<string> {
+    app: App;
     textInputEl: HTMLInputElement;
+    static MAX_SUGGESTIONS: number = 100;
 
     /**
      * Constructs a new TextInputPopoverSuggest instance.
@@ -15,10 +17,14 @@ export class TextInputPopoverSuggest extends PopoverSuggest {
      */
     constructor(app: App, inputEl: HTMLInputElement) {
         super(app);
+        this.app = app;
+
         this.textInputEl = inputEl;
         inputEl.addEventListener("input", this.onInputChange.bind(this));
         inputEl.addEventListener("focus", this.onInputChange.bind(this));
         inputEl.addEventListener("blur", this.close.bind(this));
+
+        // @ts-ignore
         this.suggestEl.on("mousedown", ".suggestion-item", (e: Event) => {
             e.preventDefault();
         });
@@ -33,10 +39,13 @@ export class TextInputPopoverSuggest extends PopoverSuggest {
         const suggestions = this.getSuggestions(value);
 
         if (suggestions.length > 0) {
+            // @ts-ignore
             this.suggestions.setSuggestions(suggestions);
             this.open();
+            // @ts-ignore
             this.setAutoDestroy(inputEl);
             if (!Platform.isPhone) {
+                // @ts-ignore
                 this.reposition(calculateBoundingRectangle(inputEl));
             }
         } else {
@@ -45,14 +54,30 @@ export class TextInputPopoverSuggest extends PopoverSuggest {
     }
 
     /**
+     * Retrieves the file suggestions based on the input value.
+     * @param {string} input - The input value.
+     * @returns {string[]} - The array of file suggestions.
+     */
+    getSuggestions(input: string): any[] {
+        input = input.toLowerCase();
+        const suggestions: any[] = [];
+
+        return suggestions;
+    }
+
+    renderSuggestion(value: any, el: HTMLElement) {
+        el.setText(value);
+    }
+
+    /**
      * Selects a suggestion.
      * @param {any} suggestion - The selected suggestion.
      * @param {any} value - The value associated with the selected suggestion.
      */
     selectSuggestion(suggestion: any, value: any): void {
-        if (this.onSelect) {
-            this.onSelect(suggestion, value);
-        }
+        // if (this.onSelect) {
+        //     this.onSelect(suggestion, value);
+        // }
     }
 }
 
@@ -81,20 +106,20 @@ export class FolderTextInputPopoverSuggest extends TextInputPopoverSuggest {
     /**
      * Renders the suggestion item.
      * @param {TFolder | null} suggestion - The suggestion item.
-     * @param {SuggestionItem} item - The suggestion item element.
+     * @param {HTMLElement} el - The suggestion item element.
      */
-    renderSuggestion(suggestion: TFolder | null, item: SuggestionItem): void {
+    renderSuggestion(suggestion: TFolder | null, el: HTMLElement): void {
         if (suggestion) {
-            item.setText(suggestion.path);
+            el.setText(suggestion.path);
         } else {
-            item.setText(`+ ${this.textInputEl.value}`);
+            el.setText(`+ ${this.textInputEl.value}`);
         }
     }
 
     /**
-     * Retrieves the file suggestions based on the input value.
+     * Retrieves the folder suggestions based on the input value.
      * @param {string} input - The input value.
-     * @returns {TFolder[]} - The array of file suggestions.
+     * @returns {TFolder[]} - The array of folder suggestions.
      */
     getSuggestions(input: string): TFolder[] {
         input = input.toLowerCase();
@@ -111,21 +136,21 @@ export class FolderTextInputPopoverSuggest extends TextInputPopoverSuggest {
             }
         }
 
-        if (this.allowNullSelection && input) {
-            suggestions.push(null);
-        }
+        // if (this.allowNullSelection && input) {
+        //     suggestions.push(null);
+        // }
 
         return suggestions;
     }
 
     /**
-     * Predicate function to filter file suggestions.
-     * @param {TFolder} file - The file to test.
+     * Predicate function to filter folder suggestions.
+     * @param {TFolder} folder - The folder to test.
      * @param {string} input - The input value.
-     * @returns {boolean} - Whether the file matches the input value.
+     * @returns {boolean} - Whether the folder matches the input value.
      */
-    filePredicate(file: TFolder, input: string): boolean {
-        return file.path.toLowerCase().includes(input);
+    filePredicate(folder: TFolder, input: string): boolean {
+        return folder.path.toLowerCase().includes(input);
     }
 
     /**
@@ -152,7 +177,7 @@ export class FileTextInputPopoverSuggest extends TextInputPopoverSuggest {
     allowNullSelection: boolean;
 
     /**
-     * Constructs a new FolderTextInputPopoverSuggest instance.
+     * Constructs a new FileTextInputPopoverSuggest instance.
      * @param {App} app - The Obsidian App instance.
      * @param {HTMLInputElement} inputEl - The HTMLInputElement to attach the suggestion popover to.
      * @param {boolean} allowNullSelection - Whether to allow null selection (no suggestion).
@@ -168,21 +193,21 @@ export class FileTextInputPopoverSuggest extends TextInputPopoverSuggest {
 
     /**
      * Renders the suggestion item.
-     * @param {TFolder | null} suggestion - The suggestion item.
-     * @param {SuggestionItem} item - The suggestion item element.
+     * @param {TFile | null} suggestion - The suggestion item.
+     * @param {HTMLElement} el - The suggestion item element.
      */
-    renderSuggestion(suggestion: TFile | null, item: SuggestionItem): void {
+    renderSuggestion(suggestion: TFile | null, el: HTMLElement): void {
         if (suggestion) {
-            item.setText(suggestion.path);
+            el.setText(suggestion.path);
         } else {
-            item.setText(`+ ${this.textInputEl.value}`);
+            el.setText(`+ ${this.textInputEl.value}`);
         }
     }
 
     /**
      * Retrieves the file suggestions based on the input value.
      * @param {string} input - The input value.
-     * @returns {TFolder[]} - The array of file suggestions.
+     * @returns {TFile[]} - The array of file suggestions.
      */
     getSuggestions(input: string): TFile[] {
         input = input.toLowerCase();
@@ -199,16 +224,16 @@ export class FileTextInputPopoverSuggest extends TextInputPopoverSuggest {
             }
         }
 
-        if (this.allowNullSelection && input) {
-            suggestions.push(null);
-        }
+        // if (this.allowNullSelection && input) {
+        //     suggestions.push(null);
+        // }
 
         return suggestions;
     }
 
     /**
      * Predicate function to filter file suggestions.
-     * @param {TFolder} file - The file to test.
+     * @param {TFile} file - The file to test.
      * @param {string} input - The input value.
      * @returns {boolean} - Whether the file matches the input value.
      */
@@ -218,7 +243,7 @@ export class FileTextInputPopoverSuggest extends TextInputPopoverSuggest {
 
     /**
      * Selects a suggestion and updates the input value.
-     * @param {TFolder | null} suggestion - The selected suggestion.
+     * @param {TFile | null} suggestion - The selected suggestion.
      * @param {any} value - The value associated with the selected suggestion.
      */
     selectSuggestion(suggestion: TFile | null, value: any): void {
@@ -257,21 +282,21 @@ export class CodeInputPopoverSuggest extends TextInputPopoverSuggest {
 
     /**
      * Renders the suggestion item.
-     * @param {TFolder | null} suggestion - The suggestion item.
-     * @param {SuggestionItem} item - The suggestion item element.
+     * @param {Code | null} suggestion - The suggestion item.
+     * @param {HTMLElement} el - The suggestion item element.
      */
-    renderSuggestion(suggestion: Code | null, item: SuggestionItem): void {
+    renderSuggestion(suggestion: Code | null, el: HTMLElement): void {
         if (suggestion) {
-            item.setText(suggestion.name);
+            el.setText(suggestion.name);
         } else {
-            item.setText(`+ ${this.textInputEl.value}`);
+            el.setText(`+ ${this.textInputEl.value}`);
         }
     }
 
     /**
-     * Retrieves the file suggestions based on the input value.
-     * @param {string} input - The input value.
-     * @returns {TFolder[]} - The array of file suggestions.
+     * Retrieves the Code suggestions based on the input value.
+     * @param {string} query - The input value.
+     * @returns {Code[]} - The array of Code suggestions.
      */
     getSuggestions(query: string): Code[] {
         return this.codes.filter((code) =>
@@ -281,7 +306,7 @@ export class CodeInputPopoverSuggest extends TextInputPopoverSuggest {
 
     /**
      * Selects a suggestion and updates the input value.
-     * @param {TFolder | null} suggestion - The selected suggestion.
+     * @param {Code | null} suggestion - The selected suggestion.
      * @param {any} value - The value associated with the selected suggestion.
      */
     selectSuggestion(suggestion: Code | null, value: any): void {
@@ -332,7 +357,7 @@ function calculateElementPosition(
             left -= offsetParentElement.scrollLeft;
         }
 
-        element = offsetParentElement;
+        element = <HTMLElement>offsetParentElement;
     }
 
     return {

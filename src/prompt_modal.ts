@@ -27,7 +27,7 @@ export class PromptModal extends Modal {
     }
 
     onOpen() {
-        let { contentEl } = this;
+        const { contentEl } = this;
 
         this.containerEl.addClass("runjs-prompt-modal");
 

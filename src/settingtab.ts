@@ -19,7 +19,6 @@ import {
     FolderTextInputPopoverSuggest,
 } from "./suggest";
 import {
-    BUY_ME_A_COFFEE_QR,
     BUY_ME_A_COFFEE_QR_BOX,
     BUY_ME_A_COFFEE_YELLOW,
     COMMAND_DEFAULT_ICON,
@@ -225,8 +224,8 @@ export class RunJSSettingTab extends PluginSettingTab {
                     .setIcon("plus")
                     .setTooltip("Add Command")
                     .onClick(async (evt: MouseEvent) => {
-                        let app = this.app;
-                        let runJSCodeModal = new RunJSCodeModal(
+                        const app = this.app;
+                        const runJSCodeModal = new RunJSCodeModal(
                             app,
                             this.plugin,
                             this.plugin.codesScript,
@@ -252,8 +251,8 @@ export class RunJSSettingTab extends PluginSettingTab {
                     .setIcon("plus")
                     .setTooltip("Add ribbon icon")
                     .onClick(async (evt: MouseEvent) => {
-                        let app = this.app;
-                        let runJSCodeModal = new RunJSCodeModal(
+                        const app = this.app;
+                        const runJSCodeModal = new RunJSCodeModal(
                             app,
                             this.plugin,
                             this.plugin.codesScript,
@@ -309,7 +308,7 @@ export class RunJSSettingTab extends PluginSettingTab {
     }
 
     addAutostartSetting(code: Code) {
-        let autostart: [string, boolean] = [code.name, true];
+        const autostart: [string, boolean] = [code.name, true];
         this.plugin.settings.autostarts.push(autostart);
         this.plugin.saveSettings();
         this.renderAutostartSetting(
@@ -319,7 +318,7 @@ export class RunJSSettingTab extends PluginSettingTab {
     }
 
     addCommandSetting(code: Code) {
-        let keys = Object.keys(this.plugin.settings.commands);
+        const keys = Object.keys(this.plugin.settings.commands);
         let index = 0;
         for (; index <= keys.length; index++) {
             if (!keys.includes(COMMAND_PREFIX + index)) {
@@ -342,7 +341,7 @@ export class RunJSSettingTab extends PluginSettingTab {
     }
 
     addRibbonIconSetting(code: Code) {
-        let setting_new = {
+        const setting_new = {
             name: code.name,
             codeName: code.name,
             enable: false,
@@ -359,7 +358,7 @@ export class RunJSSettingTab extends PluginSettingTab {
     }
 
     renderAutostartSetting(autostart: [string, boolean], settings: [string, boolean][]) {
-        let codeName = autostart[0];
+        const codeName = autostart[0];
         let code = this.plugin.getCodeByName(codeName);
         
         let checkError = false;
@@ -371,11 +370,11 @@ export class RunJSSettingTab extends PluginSettingTab {
             });
             checkError = true;
         }
-        let setting = new Setting(this.autostartContainerEl)
+        const setting = new Setting(this.autostartContainerEl)
             .setName(
                 createFragment((e) => {
-                    let icon = e.createSpan({ text: "icon", cls: "icon" });
-                    setIcon(icon, LIST_ICON[code.form]);
+                    const icon = e.createSpan({ text: "icon", cls: "icon" });
+                    if(code && Object.keys(LIST_ICON).contains(code.form)) setIcon(icon, LIST_ICON[code.form]);
                     e.createSpan({ text: autostart[0] });
                 })
             )
@@ -432,7 +431,7 @@ export class RunJSSettingTab extends PluginSettingTab {
     }
 
     renderCommandSetting(key: string, settings: CommandsSetting) {
-        let commandSetting: CommandSetting = settings[key];
+        const commandSetting: CommandSetting = settings[key];
         let code = this.plugin.getCodeByName(commandSetting.codeName);
         let checkError = false;
         if (code == null) {
@@ -445,15 +444,16 @@ export class RunJSSettingTab extends PluginSettingTab {
         }
         let textComp: TextComponent;
         let toggleComp: ToggleComponent;
-        let setting = new Setting(this.commandsContainerEl)
+        const setting = new Setting(this.commandsContainerEl)
             .setName(
                 createFragment((e) => {
-                    let icon = e.createSpan({
+                    const icon = e.createSpan({
                         text: "icon",
                         cls: "icon file-icon",
+                        // @ts-ignore
                         title: code.form,
                     });
-                    setIcon(icon, LIST_ICON[code.form]);
+                    if(code && Object.keys(LIST_ICON).contains(code.form)) setIcon(icon, LIST_ICON[code.form]);
                     e.createSpan({ text: commandSetting.codeName, cls: "code-name" });
                 })
             )
@@ -556,15 +556,17 @@ export class RunJSSettingTab extends PluginSettingTab {
         }
         let textComp: TextComponent;
         let toggleComp: ToggleComponent;
-        let setting = new Setting(this.ribbonIconsContainerEl)
+        const setting = new Setting(this.ribbonIconsContainerEl)
             .setName(
                 createFragment((e) => {
-                    let icon = e.createSpan({
+                    const icon = e.createSpan({
                         text: "icon",
                         cls: "icon file-icon",
+                        // @ts-ignore
                         title: code.form,
                     });
-                    setIcon(icon, LIST_ICON[code.form]);
+                    // setIcon(icon, LIST_ICON[code.form]);
+                    if(code && Object.keys(LIST_ICON).contains(code.form)) setIcon(icon, LIST_ICON[code.form]);
                     e.createSpan({
                         text: ribbonIconSetting.codeName,
                         cls: "code-name",
@@ -692,43 +694,52 @@ export class RunJSSettingTab extends PluginSettingTab {
     }
 
     moveSetting(setting: Setting, isMoveDown: boolean) {
-        let settings = setting[this.settings_sym];
-        let settingEl = setting.settingEl;
+        // const settings = setting[this.settings_sym];
+        const settings = setting[(this.settings_sym as unknown) as keyof Setting];
+        if (settings instanceof Array) {
+            const settingEl = setting.settingEl;
 
-        let parentEl = settingEl.parentElement;
+            const parentEl = settingEl.parentElement;
 
-        if (parentEl == null) return;
+            if (parentEl == null) return;
 
-        let index = Array.from(parentEl.children).indexOf(settingEl);
+            const index = Array.from(parentEl.children).indexOf(settingEl);
 
-        if (isMoveDown) {
-            if (index == settings.length - 1) return;
+            if (isMoveDown) {
+                if (index == settings.length - 1) return;
 
-            parentEl.insertAfter(settingEl, settingEl.nextElementSibling);
-            settings.splice(index + 1, 0, settings.splice(index, 1)[0]);
-        } else {
-            if (index <= 0) return;
-            
-            parentEl.insertBefore(settingEl, settingEl.previousElementSibling);
-            settings.splice(index - 1, 0, settings.splice(index, 1)[0]);
+                parentEl.insertAfter(settingEl, settingEl.nextElementSibling);
+                settings.splice(index + 1, 0, settings.splice(index, 1)[0]);
+            } else {
+                if (index <= 0) return;
+                
+                parentEl.insertBefore(settingEl, settingEl.previousElementSibling);
+                settings.splice(index - 1, 0, settings.splice(index, 1)[0]);
+            }
+
+            this.plugin.saveSettings();
         }
-
-        this.plugin.saveSettings();
     }
 
     deleteSetting(setting: Setting) {
-        let settings = setting[this.settings_sym];
-        let settingEl = setting.settingEl;
+        // const settings = setting[this.settings_sym];
+        const settings = setting[(this.settings_sym as unknown) as keyof Setting];
+        const settingEl = setting.settingEl;
 
         if (settings instanceof Array) {
-            let index = Array.from(settingEl.parentElement.children).indexOf(
+            const index = Array.from(settingEl.parentElement?.children ?? []).indexOf(
                 settingEl
             );
             if (index !== -1) {
                 settings.splice(index, 1);
             }
         } else {
-            if (setting[this.key_sym]) delete settings[setting[this.key_sym]];
+            // if (setting[this.key_sym]) delete settings[setting[this.key_sym]];
+
+            const key = setting[(this.key_sym as unknown) as keyof Setting];
+            
+            // @ts-ignore
+            if (key) delete settings[key];
         }
         
         settingEl.remove();

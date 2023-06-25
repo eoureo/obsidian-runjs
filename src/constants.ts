@@ -25,7 +25,7 @@ export const RunJS_LISTVIEW_ICON = JS_DARK_ICON;
 
 export const RunJS_ICONS = [ARROW_DOWN_A_Z_ICON, ARROW_UP_Z_A_ICON, CODE_TYPE_ALL_ICON, JS_ICON, JS_DARK_ICON];
 
-export const LIST_ICON = {
+export const LIST_ICON: { [key: string]: string } = {
     script: "scroll",
     module: "puzzle",
     codeblock: "code-2",

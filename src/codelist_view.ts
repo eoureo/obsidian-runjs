@@ -8,7 +8,7 @@ import {
     MarkdownView,
     MenuItem,
 } from "obsidian";
-import { ARROW_DOWN_A_Z_ICON, ARROW_UP_Z_A_ICON, LIST_ICON, RunJS_LISTVIEW_ICON } from "./constants";
+import { LIST_ICON, RunJS_LISTVIEW_ICON } from "./constants";
 
 export const RunJSCodeListViewType = "runjs-codelist-view";
 
@@ -54,10 +54,10 @@ export class RunJSListView extends ItemView {
     public onload() {
         this.containerEl.classList.add("runjs-listview-container");
 
-        let navHeader = createDiv({ cls: "nav-header" });
+        const navHeader = createDiv({ cls: "nav-header" });
         this.containerEl.insertBefore(navHeader, this.containerEl.firstChild);
 
-        let collapseBtn = createSpan({ cls: "icon clickable-icon nav-action-button", attr: {"aria-label": "Collapse all"} });
+        const collapseBtn = createSpan({ cls: "icon clickable-icon nav-action-button", attr: {"aria-label": "Collapse all"} });
         setIcon(collapseBtn, "lucide-chevrons-down-up");
 
         collapseBtn.addEventListener("click", async (event: MouseEvent) => {
@@ -75,7 +75,7 @@ export class RunJSListView extends ItemView {
         
         navHeader.appendChild(collapseBtn);
 
-        let sortBtn = createSpan({ cls: "icon clickable-icon nav-action-button", attr: {"aria-label": "Sort: Z to A"} });
+        const sortBtn = createSpan({ cls: "icon clickable-icon nav-action-button", attr: {"aria-label": "Sort: Z to A"} });
         setIcon(sortBtn, "lucide-sort-asc");
 
         sortBtn.addEventListener("click", async (event: MouseEvent) => {
@@ -92,7 +92,7 @@ export class RunJSListView extends ItemView {
         
         navHeader.appendChild(sortBtn);
 
-        let filterBtn = createDiv({
+        const filterBtn = createDiv({
             text: "filter",
             cls: "icon filter is-clickable clickable-icon",
             title: "filter",
@@ -100,15 +100,20 @@ export class RunJSListView extends ItemView {
         setIcon(filterBtn, "lucide-filter");
 
         this.menuFilter = new Menu();
-        this.menuFilter.dom.classList.add("runjs-listview-menu");
+        
+        // @ts-ignore
+        const menuFilterDom = this.menuFilter.dom;
+        menuFilterDom.classList.add("runjs-listview-menu");
 
-        let filters = this.plugin.settings.listviewFilters;
+        const filters = this.plugin.settings.listviewFilters;
 
         [
             // ["favorite", ["favorite"]],
             ["type", ["script", "module"]],
             ["form", ["codeblock", "file"]],
-        ].map(([group, options]) => {
+        ].map((item: [string, []]) => {
+            const group: string = item[0];
+            const options = item[1];
             if (filters[group] == undefined || filters[group].length == 0) {
                 if (options.length > 1) filters[group] = options.slice();
                 else filters[group] = [];
@@ -117,7 +122,7 @@ export class RunJSListView extends ItemView {
                 filters[group].map((option: string) => "ft-" + option)
             );
             filters[group].forEach((option: string) =>
-                this.menuFilter.dom.classList.add("ft-" + option)
+                menuFilterDom.classList.add("ft-" + option)
             );
 
             for (let option of options) {
@@ -139,13 +144,13 @@ export class RunJSListView extends ItemView {
                             }
 
                             options.forEach((op) => {
-                                let ft_op = "ft-" + op;
+                                const ft_op = "ft-" + op;
                                 if (filters[group].contains(op)) {
                                     this.containerEl.classList.add(ft_op);
-                                    this.menuFilter.dom.classList.add(ft_op);
+                                    menuFilterDom.classList.add(ft_op);
                                 } else {
                                     this.containerEl.classList.remove(ft_op);
-                                    this.menuFilter.dom.classList.remove(
+                                    menuFilterDom.classList.remove(
                                         ft_op
                                     );
                                 }
@@ -153,7 +158,9 @@ export class RunJSListView extends ItemView {
 
                             this.plugin.saveSettings();
                         });
+                    // @ts-ignore
                     item.dom.classList.add("ft-item");
+                    // @ts-ignore
                     item.dom.classList.add(option);
                     }
                 );
@@ -183,11 +190,11 @@ export class RunJSListView extends ItemView {
             if (filters[group].contains(option)) {
                 filters[group].remove(option);
                 this.containerEl.classList.remove(ft_op);
-                this.menuFilter.dom.classList.remove(ft_op);
+                menuFilterDom.classList.remove(ft_op);
             } else {
                 filters[group].push(option);
                 this.containerEl.classList.add(ft_op);
-                this.menuFilter.dom.classList.add(ft_op);
+                menuFilterDom.classList.add(ft_op);
             }
 
             this.plugin.saveSettings();
@@ -207,6 +214,7 @@ export class RunJSListView extends ItemView {
 
         this.menuOther = new Menu();
         let menuItemAutoRefresh: MenuItem;
+        // @ts-ignore
         this.menuOther.dom.classList.add("runjs-listview-menu");
         this.menuOther.addItem((item) => {
             menuItemAutoRefresh = item;
@@ -227,7 +235,9 @@ export class RunJSListView extends ItemView {
                 .setTitle("Open " + this.plugin.manifest.name + " Setting")
                 .setIcon("lucide-settings")
                 .onClick(() => {
+                    // @ts-ignore
                     this.app.commands.commands["app:open-settings"].callback();
+                    // @ts-ignore
                     this.app.setting.openTabById(this.plugin.manifest.id);
                 })
         });
@@ -244,8 +254,10 @@ export class RunJSListView extends ItemView {
         menuBtn.addEventListener("click", (event: MouseEvent) => {
             menuItemAutoRefresh.setChecked(this.plugin.settings.autoRefresh ?? false);
             if (this.plugin.settings.autoRefresh) {
+                // @ts-ignore
                 if (menuItemAutoRefresh.checkIconEl) menuItemAutoRefresh.dom.appendChild(menuItemAutoRefresh.checkIconEl);
             } else {
+                // @ts-ignore
                 if (menuItemAutoRefresh.checkIconEl && menuItemAutoRefresh.checkIconEl.parentElement) menuItemAutoRefresh.dom.removeChild(menuItemAutoRefresh.checkIconEl);
             }
             this.menuOther.showAtMouseEvent(event);
@@ -291,41 +303,41 @@ export class RunJSListView extends ItemView {
     }
 
     update() {
-        let contentEl = this.contentEl;
+        const contentEl = this.contentEl;
 
         // while (contentEl.firstChild) {
         //     contentEl.remove();
         // }
         contentEl.empty();
         
-        let treeItemRoot = contentEl.createDiv({cls:"tree-item nav-folder mod-root has-favorite"});
-        treeItemRoot.createDiv({cls:"tree-item-children nav-folder-children"});
+        const treeItemRoot = contentEl.createDiv({cls:"tree-item nav-folder mod-root has-favorite"});
+        const treeItemRootContainer = treeItemRoot.createDiv({cls:"tree-item-children nav-folder-children"});
         this.groups = {"/": treeItemRoot};
-        let groups = this.groups;
-        let treeItems = this.treeItems;
+        const groups = this.groups;
+        const treeItems = this.treeItems;
 
         for (let code of this.plugin.codes) {
-            let match = code.name.match(/^(.*?)([^\/]*)$/);
+            const match = code.name.match(/^(.*?)([^\/]*)$/);
 
             if (match == null) continue;
 
-            let groupStr = match[1];
-            let name = match[2];
-            let groupSplits = groupStr.replace(/\/$/, "").split("/");
-            let parentEl: HTMLElement = treeItemRoot.querySelector(":scope > .tree-item-children");
+            const groupStr = match[1];
+            const name = match[2];
+            const groupSplits = groupStr.replace(/\/$/, "").split("/");
+            let parentEl: HTMLElement | null = treeItemRootContainer;
             let groupNameFull: string = "";
             
             for (let groupName of groupSplits) {
                 if (groupName === "") continue;
                 groupNameFull += "/" + groupName;
-                if (groups[groupNameFull] == undefined) {
-                    let folderEl = parentEl.createDiv({cls:"tree-item nav-folder"});
+                if (parentEl && groups[groupNameFull] == undefined) {
+                    const folderEl = parentEl.createDiv({cls:"tree-item nav-folder"});
                     folderEl.dataset.group_name = groupNameFull;
                     folderEl.dataset.name = groupName;
 
-                    let folderSelfEl = folderEl.createDiv({cls:"tree-item-self is-clickable mod-collapsible nav-folder-title"});
+                    const folderSelfEl = folderEl.createDiv({cls:"tree-item-self is-clickable mod-collapsible nav-folder-title"});
 
-                    let folderSelfIconEl = folderSelfEl.createDiv({cls:"tree-item-icon collapse-icon nav-folder-collapse-indicator"});
+                    const folderSelfIconEl = folderSelfEl.createDiv({cls:"tree-item-icon collapse-icon nav-folder-collapse-indicator"});
                     setIcon(folderSelfIconEl, "right-triangle");
 
                     folderSelfEl.createDiv({text: groupName,cls:"tree-item-inner nav-folder-title-content"});
@@ -334,7 +346,7 @@ export class RunJSListView extends ItemView {
                         this.toggleCollapse(folderEl);
                     });
                     
-                    let childrenEl = folderEl.createDiv({cls:"tree-item-children nav-folder-children"});
+                    const childrenEl = folderEl.createDiv({cls:"tree-item-children nav-folder-children"});
 
                     groups[groupNameFull] = folderEl;
                     
@@ -342,11 +354,12 @@ export class RunJSListView extends ItemView {
 
                     parentEl = childrenEl;
                 } else {
-                    parentEl = groups[groupNameFull].querySelector(":scope > .tree-item-children");
+                    const parentElOrNull = <HTMLElement>groups[groupNameFull].querySelector(":scope > .tree-item-children");
+                    if (parentElOrNull != null) parentEl = parentElOrNull;
                 }
             }
 
-            let treeItem = parentEl.createDiv({cls:"tree-item"});
+            const treeItem = parentEl.createDiv({cls:"tree-item"});
             treeItem.dataset.group_name = groupNameFull;
             treeItem.dataset.name = name;
             treeItems.push(treeItem);
@@ -365,9 +378,9 @@ export class RunJSListView extends ItemView {
                 this.openFileContextMenu(event, code, treeItem)
             });
 
-            let treeItemSelf = treeItem.createDiv({cls:"tree-item-self is-clickable"});
+            const treeItemSelf = treeItem.createDiv({cls:"tree-item-self is-clickable"});
 
-            let form = createSpan({
+            const form = createSpan({
                 text: code.form,
                 cls: "icon form is-clickable",
                 title:
@@ -385,7 +398,7 @@ export class RunJSListView extends ItemView {
                 this.focusFile(code, event.ctrlKey || event.metaKey);
             });
 
-            let type = createSpan({ text: code.type, cls: "icon type" });
+            const type = createSpan({ text: code.type, cls: "icon type" });
             if (code.type == "module") {
                 setIcon(type, LIST_ICON["module"]);
             } else {
@@ -396,7 +409,7 @@ export class RunJSListView extends ItemView {
 
             treeItemSelf.appendChild(form);
 
-            let nameEl = treeItemSelf.createDiv({cls:"name-node"});
+            const nameEl = treeItemSelf.createDiv({cls:"name-node"});
             nameEl.createSpan({text: groupNameFull + "/", cls: "group-name"});
             nameEl.createSpan({text: name, cls: "name"});
             let title_pre = "";
@@ -437,7 +450,9 @@ export class RunJSListView extends ItemView {
             const groupEl = this.groups[key];
             
             const groupElSelf = this.groups[key].querySelector(":scope > .tree-item-self");
-            groupElSelf.dataset.item_len = groupEl.querySelectorAll(":scope > .tree-item-children > .tree-item").length;
+
+            // @ts-ignore
+            if (groupElSelf != null) groupElSelf.dataset.item_len = groupEl.querySelectorAll(":scope > .tree-item-children > .tree-item").length;
 
             if (groupEl.querySelectorAll(".tree-item.favorite").length > 0) {
                 groupEl.classList.add("has-favorite");
@@ -465,11 +480,11 @@ export class RunJSListView extends ItemView {
 
         this.plugin.saveSettings();
 
-        let keys = Object.keys(this.groups);
+        const keys = Object.keys(this.groups);
         
         keys.sort((a, b) => {
-            let a_value = this.groups[a].dataset.name;
-            let b_value = this.groups[b].dataset.name;
+            let a_value = this.groups[a].dataset.name ?? "";
+            let b_value = this.groups[b].dataset.name ?? "";
             let r_value: number = 0;
 
             if (a_value > b_value) r_value = 1;
@@ -479,12 +494,12 @@ export class RunJSListView extends ItemView {
         });
 
         for (let key of keys) {
-            this.groups[key].parentElement.appendChild(this.groups[key]);
+            this.groups[key].parentElement?.appendChild(this.groups[key]);
         }
         
         this.treeItems.sort((a, b) => {
-            let a_value = a.dataset.name;
-            let b_value = b.dataset.name;
+            const a_value = a.dataset.name ?? "";
+            const b_value = b.dataset.name ?? "";
 
             let r_value: number = 0;
             if (a_value > b_value) r_value = 1;
@@ -494,13 +509,14 @@ export class RunJSListView extends ItemView {
         });
 
         for (let treeItem of this.treeItems) {
-            treeItem.parentElement.appendChild(treeItem);
+            treeItem.parentElement?.appendChild(treeItem);
         }
     }
 
     openFileContextMenu(event: MouseEvent, code: Code, treeItem: HTMLDivElement) {
         const menu = new Menu();
-        menu.dom.classList.add("runjs-listview-menu");
+        // @ts-ignore
+        menu.dom?.classList.add("runjs-listview-menu");
 
         if (code.type == "script") {
             menu.addItem((item) =>
@@ -569,16 +585,16 @@ export class RunJSListView extends ItemView {
     }
 
     collapseFolder(folderEl: HTMLElement, collapse: boolean) {
-        if (this.plugin.settings.listviewCollapse[folderEl.dataset.group_name] !== collapse) {
+        if (folderEl.dataset.group_name && this.plugin.settings.listviewCollapse[folderEl.dataset.group_name] !== collapse) {
             this.plugin.settings.listviewCollapse[folderEl.dataset.group_name] = collapse;
             this.plugin.saveSettings();
         }
         if (collapse) {
             folderEl.addClass("is-collapsed");
-            folderEl.querySelector(".collapse-icon").addClass("is-collapsed");
+            folderEl.querySelector(".collapse-icon")?.addClass("is-collapsed");
         } else {
             folderEl.removeClass("is-collapsed");
-            folderEl.querySelector(".collapse-icon").removeClass("is-collapsed");
+            folderEl.querySelector(".collapse-icon")?.removeClass("is-collapsed");
         }
     }
 
@@ -615,14 +631,15 @@ export class RunJSListView extends ItemView {
 
             if (code.form != "codeblock") return;
 
-            let viewState = leaf.getViewState();
+            const viewState = leaf.getViewState();
             viewState.state.mode = "source";
             viewState.state.source = true;
             await leaf.setViewState(viewState);
 
             sleep(50);
 
-            let editor = this.app.workspace.getActiveViewOfType(MarkdownView)?.sourceMode.cmEditor;
+            // @ts-ignore
+            const editor = this.app.workspace.getActiveViewOfType(MarkdownView)?.sourceMode.cmEditor;
 
             if (editor && code.position) {
                 editor.setCursor(code.position?.start.line);

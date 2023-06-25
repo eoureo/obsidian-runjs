@@ -226,7 +226,7 @@ export default class RunJSPlugin extends Plugin {
             }
 
             for (let key in this.settings.commands) {
-                let command = this.settings.commands[key];
+                const command = this.settings.commands[key];
                 if (command.enable) {
                     this.runAddCommand(key);
                 }
@@ -243,7 +243,7 @@ export default class RunJSPlugin extends Plugin {
             if (changed) this.saveSettings();
 
             this.state = "loaded";
-            this.log("info", "loaded.");
+            this.log("info", "loaded." + "(v" + this.manifest.version + ")");
         });
     }
 
@@ -279,6 +279,8 @@ export default class RunJSPlugin extends Plugin {
     }
 
     handleRenameFile(file: TAbstractFile, oldPath: string) {
+        if(!(file instanceof TFile)) return;
+
         let checkChanged = false;
 
         for (let code of this.codes) {
@@ -295,30 +297,43 @@ export default class RunJSPlugin extends Plugin {
     }
 
     async handleModifyFile(file: TAbstractFile) {
+        if(!(file instanceof TFile)) return;
+
         await this.handleDeleteFile(file, false);
         await sleep(500);
         await this.handleCreateFile(file);
     }
 
     async handleCreateFile(file: TAbstractFile) {
+        if(!(file instanceof TFile)) return;
+        
         let checkChanged = false;
 
-        const fileCache = this.app.metadataCache.fileCache;
 
         if (file.extension == "md") {
+            // // @ts-ignore
+            // const fileCache = this.app.metadataCache.fileCache;
+
+            // for (let i = 0; i < 10; i++) {
+            //     // wait - max 100ms x 10
+            //     if (fileCache[file.path].hash != "") break;
+            //     await sleep(100);
+            // }
+
             for (let i = 0; i < 10; i++) {
                 // wait - max 100ms x 10
-                if (fileCache[file.path].hash != "") break;
+                // @ts-ignore
+                if (this.app.metadataCache?.getCachedFiles().contains(file.path)) break;
                 await sleep(100);
             }
 
-            let codes = await this.getCodesInCodeblock(file.path);
+            const codes = await this.getCodesInCodeblock(file.path);
             if (codes != null && codes.length > 0) {
                 for (let code of codes) this.appendCode(code);
                 checkChanged = true;
             }
         } else {
-            let code = await this.getCodeInFile(<TFile>file);
+            const code = await this.getCodeInFile(<TFile>file);
             if (code != null) {
                 this.appendCode(code);
                 checkChanged = true;
@@ -332,7 +347,9 @@ export default class RunJSPlugin extends Plugin {
     }
 
     handleDeleteFile(file: TAbstractFile, doUpdate: boolean = true) {
-        let codesTarget = [];
+        if(!(file instanceof TFile)) return;
+
+        const codesTarget = [];
 
         for (let code of this.codes) {
             if (code.file == file.path) {
@@ -380,7 +397,7 @@ export default class RunJSPlugin extends Plugin {
             await this.refreshCodes();
         }
 
-        let runJSCodeModal = new RunJSCodeModal(
+        const runJSCodeModal = new RunJSCodeModal(
             this.app,
             this,
             this.codesScript,
@@ -391,13 +408,13 @@ export default class RunJSPlugin extends Plugin {
     }
 
     async openListview() {
-        let leaf = await this.renderListview();
+        const leaf = await this.renderListview();
         
         this.app.workspace.revealLeaf(leaf);
     }
 
     async renderListview(): Promise<obsidian.WorkspaceLeaf> {
-        let [leaf] = this.app.workspace.getLeavesOfType(RunJSCodeListViewType);
+        let [ leaf ] = this.app.workspace.getLeavesOfType(RunJSCodeListViewType);
         
         if (!leaf) {
             leaf = this.app.workspace.getLeftLeaf(false);
@@ -408,7 +425,7 @@ export default class RunJSPlugin extends Plugin {
     }
 
     runCodeByName(name: string) {
-        let code = this.getCodeByName(name);
+        const code = this.getCodeByName(name);
 
         if (code == null) {
             this.log("error", "runCodeByName", "code is null");
@@ -419,8 +436,8 @@ export default class RunJSPlugin extends Plugin {
     }
 
     async runCode(code: Code | null) {
-        let text: string;
-        let folder: string;
+        let text: string = "";
+        let folder: string = "";
 
         if (code == null) {
             this.log("error", "runCode", "code is null");
@@ -431,21 +448,23 @@ export default class RunJSPlugin extends Plugin {
             text = code.text;
             folder = "";
         } else {
-            // text = await app.vault.adapter.read(code.file);
-            text = await this.app.vault.read(this.app.vault.getAbstractFileByPath(code.file));
-            folder = path.dirname(
-                code.file.replace(
-                    new RegExp("^" + this.settings.scriptsFolder + "\\/"),
-                    "./"
-                )
-            );
+            const tFile = this.app.vault.getAbstractFileByPath(code.file);
+            if (tFile instanceof TFile) {
+                text = await this.app.vault.read(tFile);
+                folder = path.dirname(
+                    code.file.replace(
+                        new RegExp("^" + this.settings.scriptsFolder + "\\/"),
+                        "./"
+                    )
+                );
+            }
         }
 
         // let F = new AsyncFunction('obsidian', this.modifyImport(text, ""));
         // await F.apply(this, obsidian);
 
-        let m_text = this.modifyImport(text, folder);
-        let F = new AsyncFunction(m_text);
+        const m_text = this.modifyImport(text, folder);
+        const F = new AsyncFunction(m_text);
         await F.apply(this);
     }
     
@@ -466,7 +485,7 @@ export default class RunJSPlugin extends Plugin {
 
         await this.iterateCodeblocks(this.appendCode.bind(this));
 
-        let tFolder: TFolder = <TFolder>(
+        const tFolder: TFolder = <TFolder>(
             this.app.vault.getAbstractFileByPath(this.settings.scriptsFolder)
         );
         
@@ -492,10 +511,11 @@ export default class RunJSPlugin extends Plugin {
             };
         }
 
-        const fileCache = this.app.metadataCache.fileCache;
+        // @ts-ignore
+        const fileCache = this.app.metadataCache.fileCache ?? {};
 
         for (let key in fileCache) {
-            let codesFile = await this.getCodesInCodeblock(key);
+            const codesFile = await this.getCodesInCodeblock(key);
             if (codesFile == null) continue;
             else {
                 for (let code of codesFile) await callback(code);
@@ -525,13 +545,15 @@ export default class RunJSPlugin extends Plugin {
     }
 
     async getCodesInCodeblock(filePath: string): Promise<Code[] | null> {
-        let codes: Code[] = [];
+        const codes: Code[] = [];
 
-        const metadataCache = this.app.metadataCache.metadataCache;
+        // @ts-ignore
+        const metadataCache = this.app.metadataCache.metadataCache ?? {};
 
-        const fileCache = this.app.metadataCache.fileCache;
+        // @ts-ignore
+        const fileCache = this.app.metadataCache.fileCache ?? {};
 
-        let hash = fileCache[filePath].hash;
+        const hash = fileCache[filePath].hash;
         if (!hash) {
             return null;
         }
@@ -543,7 +565,7 @@ export default class RunJSPlugin extends Plugin {
 
         if (metadataCache[hash] == undefined) return null;
 
-        let sections = metadataCache[hash].sections;
+        const sections = metadataCache[hash].sections;
         if (!(sections?.length > 0)) {
             return null;
         }
@@ -557,35 +579,35 @@ export default class RunJSPlugin extends Plugin {
                 }
 
                 if (contents.length <= 0) {
-                    // contents = (await this.app.vault.adapter.read(filePath)).split("\n");
-                    contents = (await this.app.vault.read(this.app.vault.getAbstractFileByPath(filePath))).split("\n");
+                    const tFile = this.app.vault.getAbstractFileByPath(filePath);
+                    if(tFile instanceof TFile) contents = (await this.app.vault.read(tFile)).split("\n");
                 }
                 
-                let position = sections[i].position;
+                const position = sections[i].position;
 
-                let match = contents[position.start.line].match(this.regexpCodeblockIndicator);
+                const match = contents[position.start.line].match(this.regexpCodeblockIndicator);
 
                 if (!match) {
                     continue;
                 }
 
-                let codeSetting: CodeSetting = this.findCodeSetting(match[1]);
+                const codeSetting: CodeSetting = this.findCodeSetting(match[1]);
 
                 if (!codeSetting) {
                     continue;
                 }
 
-                let codeText = contents
+                const codeText = contents
                     .slice(position.start.line + 1, position.end.line)
                     .join("\n")
                     .trim();
 
                 if (codeText) {
-                    let { n: name, t: type, o: order, d: desc } = codeSetting;
+                    const { n: name, t: type, o: order, d: desc } = codeSetting;
                     
                     if (name == undefined) continue;
 
-                    let code: Code = Object.assign({}, DEFAULT_CODE);
+                    const code: Code = Object.assign({}, DEFAULT_CODE);
                     code.name = name;
                     code.text = codeText;
                     code.file = filePath;
@@ -625,11 +647,11 @@ export default class RunJSPlugin extends Plugin {
         const content = await this.app.vault.read(child);
 
         if (content) {
-            let matchCodeSetting = getTagInJSDocComments(content, "RunJS");
+            const matchCodeSetting = getTagInJSDocComments(content, "RunJS");
 
-            let codeSetting: CodeSetting | Object = this.findCodeSetting(matchCodeSetting);
+            const codeSetting: CodeSetting = this.findCodeSetting(matchCodeSetting);
 
-            let code: Code = Object.assign({}, DEFAULT_CODE);
+            const code: Code = Object.assign({}, DEFAULT_CODE);
             code.name =
                 codeSetting?.n ??
                 filePath.replace(
@@ -669,11 +691,11 @@ export default class RunJSPlugin extends Plugin {
         settingStr = settingStr.trim();
         if (settingStr == "") return {};
 
-        let match = settingStr.match(/({.*})?(.*)/);
+        const match = settingStr.match(/({.*})?(.*)/);
         if (!match) return {};
 
         if (match[1] != undefined) {
-            let setting = match[1]
+            const setting = match[1]
                 .trim()
                 .replace(/(['"])(\\.|(?:(?!\1).)*)\1/g, (in_quotes: string) =>
                     in_quotes.replaceAll(":", "\uffff")
@@ -683,7 +705,7 @@ export default class RunJSPlugin extends Plugin {
 
             return JSON.parse(setting);
         } else if (match[2] != undefined) {
-            let match2 = match[2]
+            const match2 = match[2]
                 .trim()
                 .match(/^(['"])((?:\\.|[^\1])*)\1|^([^\s]*)/);
             if (!match2) return {};
@@ -703,9 +725,9 @@ export default class RunJSPlugin extends Plugin {
             return obsidian;
         }
 
-        let code = this.codesModule[codeName];
+        const code = this.codesModule[codeName];
         if (code) {
-            let text = await this.getCodeText(code);
+            const text = await this.getCodeText(code);
             
             if (text) {
                 if (
@@ -715,7 +737,7 @@ export default class RunJSPlugin extends Plugin {
                     return this.modulesLoaded[code.name].module;
                 }
 
-                let text_modified = this.modifyImport(
+                const text_modified = this.modifyImport(
                     text,
                     path.dirname(codeName)
                 );
@@ -793,7 +815,7 @@ export default class RunJSPlugin extends Plugin {
                     }
 
                     // 중괄호를 먼저 처리
-                    let text = p1.replace(
+                    const text = p1.replace(
                         /({[^{}]+})/g,
                         function (match: string) {
                             return match.trim().replace(/,/g, "\uffff"); // 쉼표를 \uffff 문자로 대체
@@ -802,9 +824,9 @@ export default class RunJSPlugin extends Plugin {
 
                     // 쉼표를 기준으로 분할하고 다시 쉼표를 원래의 문자로 대체
                     let mName: string = "";
-                    let values: string[] = [];
+                    const values: string[] = [];
                     text.split(/\s*,\s*/).forEach(function (item: string) {
-                        let match_mName = item
+                        const match_mName = item
                             .trim()
                             .match(/^\*\s+as\s+(.*)$/); // "* as name"이면
                         
@@ -825,7 +847,7 @@ export default class RunJSPlugin extends Plugin {
                             .replace(/\bas\b/g, ":") // as를 ":"로 바꿈
                             .replace(/ufffe/g, "as"); // 다시 다른 문자를 as로 돌려 놓음
 
-                        let match_bracket = item.trim().match(/^{(.*)}$/);
+                        const match_bracket = item.trim().match(/^{(.*)}$/);
                         if (match_bracket) {
                             match_bracket[1]
                                 .replace(
@@ -850,7 +872,7 @@ export default class RunJSPlugin extends Plugin {
                         }
                     });
 
-                    let commands = [];
+                    const commands = [];
 
                     p3 = this.importPathJoin(folder, p3);
 
@@ -918,7 +940,7 @@ export default class RunJSPlugin extends Plugin {
     }
 
     runAddCommand(id: string) {
-        let command = this.settings.commands[id];
+        const command = this.settings.commands[id];
 
         if (command != null) {
             this.addCommand({
@@ -944,12 +966,15 @@ export default class RunJSPlugin extends Plugin {
     }
 
     removeCommand(id: string) {
+        // @ts-ignore
         this.app.commands.removeCommand(this.manifest.id + ":" + id);
     }
 
     removeRibbonIcon(setting: RibbonIconSetting) {
         let ribbonItem;
-        let ribbonId = this.manifest.id + ":" + setting.name;
+        const ribbonId = this.manifest.id + ":" + setting.name;
+        
+        // @ts-ignore
         for (let item of this.app.workspace.leftRibbon.items) {
             if (item.id == ribbonId) {
                 ribbonItem = item;
@@ -958,7 +983,8 @@ export default class RunJSPlugin extends Plugin {
         }
         if (ribbonItem) {
             ribbonItem.buttonEl.remove();
-            this.app.workspace.leftRibbon.removeRibbonAction(ribbonItem.title);
+            // @ts-ignore
+            this.app.workspace.leftRibbon?.removeRibbonAction(ribbonItem.title);
         }
     }
 
@@ -966,11 +992,11 @@ export default class RunJSPlugin extends Plugin {
         if (this._iconsObsidian == undefined) {
             const fs = require("fs");
             const path = require("path");
-            let f_path = path.join(__dirname, "../../obsidian.asar/app.js");
-            let f = fs.readFileSync(f_path, { encoding: "utf8", flag: "r" });
+            const f_path = path.join(__dirname, "../../obsidian.asar/app.js");
+            const f = fs.readFileSync(f_path, { encoding: "utf8", flag: "r" });
 
             // let match = f.match(/const \w+=({.*?accessibility:.*?})/);
-            let match = f.match(/const \w+=({accessibility:.*?})/);
+            const match = f.match(/const \w+=({accessibility:.*?})/);
 
             if (match) {
                 this._iconsObsidian = match[1]
@@ -984,14 +1010,14 @@ export default class RunJSPlugin extends Plugin {
 
     async openIconModal(callback?: (icon: string) => void) {
         // let icons = RunJS_ICONS.concat(this.iconsObsidian);
-        let icons = obsidian.getIconIds();
+        const icons = obsidian.getIconIds();
 
         if (icons.length <= 0) {
             new Notice("There is no icon data.");
             return;
         }
 
-        let iconModal = new IconModal(
+        const iconModal = new IconModal(
             this.app,
             icons,
             callback ??
@@ -1002,18 +1028,34 @@ export default class RunJSPlugin extends Plugin {
         iconModal.open();
     }
 
-    async openObjectModal(object?: {}, callback?: (key: string) => void) {
-        if (object == undefined) object = {
-            obsidian: obsidian,
-            app: this.app, 
-            RunJS: this,
-            dataview: this.app.plugins.plugins["dataview"],
-            templater: this.app.plugins.plugins["templater-obsidian"],
-            electron: electron,
-            window: window
-        };
+    async openObjectModal(object?: {[key: string]: any }, callback?: (key: string) => void) {
+        if (object == undefined) {
+            object = {};
+            
+            object["obsidian"] = obsidian;
+            object["app"] = this.app;
+            object["RunJS"] = this;
 
-        let objectModal = new ObjectModal(
+            // @ts-ignore
+            const appPlugins = this.app.plugins;
+
+            const dataview = appPlugins.plugins["dataview"];
+            if (dataview)
+                object["dataview"] = dataview;
+            
+            const templater = appPlugins.plugins["templater-obsidian"];
+            if (templater)
+                object["templater"] = templater;
+
+            // @ts-ignore
+            const electron = window.electron;
+            if (electron)
+                object["electron"] = electron;
+
+            object["window"] = window;
+        }
+
+        const objectModal = new ObjectModal(
             this.app,
             this,
             object,
@@ -1061,19 +1103,20 @@ export default class RunJSPlugin extends Plugin {
             type = args[0];
             args.shift();
         }
+
         try {
             if (this.settings.logNotice)
                 new Notice(this.manifest.name + ":" + " [" + type + "] " + args.join(" "));
-            if (this.settings.logConsole)
-                console[type](this.manifest.name + ":", ...args);
-            if (this.settings.logFile && this.settings.logFilePath != "") {
-                // this.app.vault.adapter.append(this.settings.logFilePath, "- " + timezoneDateISOSting + " [" + type + "] " + args.join(" ") + "\n");
-
-                // vault.append(file: TFile, data: string, options?: DataWriteOptions): Promise<void>;
-                this.app.vault.append(this.app.vault.getAbstractFileByPath(this.settings.logFilePath), "- " + timezoneDateISOSting + " [" + type + "] " + args.join(" ") + "\n");
+            if (this.settings.logConsole) {
+                // @ts-ignore
+                const console_func = console[type];
+                if(console_func) console_func(this.manifest.name + ":", ...args);
             }
-        }
-        catch (e) {
+            if (this.settings.logFile && this.settings.logFilePath != "") {
+                const tFile = this.app.vault.getAbstractFileByPath(this.settings.logFilePath);
+                if(tFile instanceof TFile) this.app.vault.append(tFile, "- " + timezoneDateISOSting + " [" + type + "] " + args.join(" ") + "\n");
+            }
+        } catch (e) {
             console.error(this.manifest.name + ":", "log - error.")
         }
     }
@@ -1093,20 +1136,23 @@ export default class RunJSPlugin extends Plugin {
     async reload() {
         this.log("info", "start reloading.");
 
-        let manifest_id = this.manifest.id;
+        const manifest_id = this.manifest.id;
 
-        if (this.app.plugins.enabledPlugins.has(manifest_id)) {
+        // @ts-ignore
+        const plugins = this.app.plugins;
+        if (plugins && plugins.enabledPlugins.has(manifest_id)) {
             this.state = "disable";
-            await this.app.plugins.disablePlugin(manifest_id);
+            await plugins.disablePlugin(manifest_id);
 
             window.setTimeout(async () => {
-                this.app.plugins.enablePlugin(manifest_id);
+                plugins.enablePlugin(manifest_id);
 
                 for (let i = 0; i < 100; i++) {
-                    let state = this.app.plugins.plugins[manifest_id]?.state;
+                    const state = plugins.plugins[manifest_id]?.state;
                     if (state == "loaded") {
                         window.setTimeout(() => {
-                            this.app.setting.openTabById(manifest_id);
+                            // @ts-ignore
+                            this.app.setting?.openTabById(manifest_id);
                         }, 100);
                         break;
                     }

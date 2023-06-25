@@ -69,10 +69,10 @@ export class RunJSCodeModal extends SuggestModal<Code> {
         );
 
         this.containerEl.addClass("runjs-code-modal");
-        let promptEl = this.containerEl.querySelector(".prompt");
+        const promptEl = this.containerEl.querySelector(".prompt");
         promptEl?.insertBefore(this.titleEl, promptEl.firstChild);
 
-        this.promptInputContainerEl.dataset.parent = this.groupParent;
+        if (this.promptInputContainerEl) this.promptInputContainerEl.dataset.parent = this.groupParent;
         this.promptInputContainerEl?.addEventListener("click", (e) => {
             if (e.target === this.promptInputContainerEl) {
                 this.gotoUpperGroup();
@@ -110,11 +110,11 @@ export class RunJSCodeModal extends SuggestModal<Code> {
                 if (!code.name.startsWith(this.groupRoot + this.groupParent))
                     return false;
 
-                let codeName = code.name.slice(
+                    const codeName = code.name.slice(
                     this.groupRoot.length + this.groupParent.length
                 );
 
-                let splits = codeName.split("/");
+                const splits = codeName.split("/");
 
                 if (!splits[0].toLowerCase().includes(query.toLowerCase()))
                     return false;
@@ -126,10 +126,10 @@ export class RunJSCodeModal extends SuggestModal<Code> {
                 return true;
             })
             .sort((a, b) => {
-                let a_name = a.name.slice(
+                const a_name = a.name.slice(
                     this.groupRoot.length + this.groupParent.length
                 );
-                let b_name = b.name.slice(
+                const b_name = b.name.slice(
                     this.groupRoot.length + this.groupParent.length
                 );
                 if (a_name > b_name) return 1;
@@ -139,7 +139,7 @@ export class RunJSCodeModal extends SuggestModal<Code> {
         }
 
         return this.codes.filter((code) => {
-            let codeName = code.name.slice(this.groupRoot.length);
+            const codeName = code.name.slice(this.groupRoot.length);
             return codeName.toLowerCase().includes(query.toLowerCase());
         })
         .sort((a, b) => {
@@ -152,12 +152,12 @@ export class RunJSCodeModal extends SuggestModal<Code> {
     // Renders each suggestion item.
     renderSuggestion(code: Code, el: HTMLElement) {
         if (this.isGrouping) {
-            let codeName = code.name.slice(
+            const codeName = code.name.slice(
                 this.groupRoot.length + this.groupParent.length
             );
-            let splits = codeName.split("/");
-            let div = el.createEl("div", { cls: "suggestion-content" });
-            let icon = div.createEl("span", { cls: "icon suggestion-icon" });
+            const splits = codeName.split("/");
+            const div = el.createEl("div", { cls: "suggestion-content" });
+            const icon = div.createEl("span", { cls: "icon suggestion-icon" });
             div.createEl("span", { cls: "suggestion-title", text: splits[0] });
             if (splits.length > 1) {
                 el.classList.add("folder");
@@ -178,10 +178,10 @@ export class RunJSCodeModal extends SuggestModal<Code> {
     // Perform action on the selected suggestion.
     onChooseSuggestion(code: Code, evt: MouseEvent | KeyboardEvent) {
         if (this.isGrouping) {
-            let codeName = code.name.slice(
+            const codeName = code.name.slice(
                 this.groupRoot.length + this.groupParent.length
             );
-            let splits = codeName.split("/");
+            const splits = codeName.split("/");
             if (splits.length > 1) {
                 this.groupParent += splits[0] + "/";
                 this.groups = [];
@@ -196,11 +196,13 @@ export class RunJSCodeModal extends SuggestModal<Code> {
     }
 
     _update() {
-        this.promptInputContainerEl.dataset.parent = this.groupParent;
+        if ( this.promptInputContainerEl) this.promptInputContainerEl.dataset.parent = this.groupParent;
+        // @ts-ignore
         this.updateSuggestions();
     }
 
     setScopes(plugin: Plugin) {
+        // @ts-ignore
         this.scope.keys.forEach((key) => {
             if (key.modifiers.length == 0 && key.key == "Escape") this.scope.unregister(key);
         });
@@ -238,8 +240,9 @@ export class RunJSCodeModal extends SuggestModal<Code> {
         this._update();
     }
 
-    close(evt?: KeyboardEvent) {
-        if (this.isClose || evt?.target.classList.contains("modal-bg"))
+    close(evt?: Event) {
+        // @ts-ignore
+        if (this.isClose || (evt && evt.target?.classList?.contains("modal-bg")))
             super.close();
 
         if (evt) {

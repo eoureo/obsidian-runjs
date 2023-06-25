@@ -14,8 +14,8 @@ interface Info {
 }
 
 export class ObjectModal extends SuggestModal<string> {
-    _object: {};
-    _objectRroot: {};
+    _object: {[key: string]: {}};
+    _objectRoot: {[key: string]: {}};
     members: string[];
     memberInfos: { [member: string]: Info };
     properties: string[];
@@ -43,7 +43,7 @@ export class ObjectModal extends SuggestModal<string> {
         this.isClose = false;
         this._isPrototypeVisible = true;
         this.memberInfos = {};
-        this._objectRroot = object;
+        this._objectRoot = object;
         this.limit = 100000;
         this.isDetail = true;
 
@@ -70,7 +70,7 @@ export class ObjectModal extends SuggestModal<string> {
         this.setInstructions(this.instructions);
 
         // this.containerEl.dataset.is_group = "true";
-        let instructionEls = this.containerEl.querySelectorAll(
+        const instructionEls = this.containerEl.querySelectorAll(
             ".prompt-instruction"
         );
         ["group normal", "group"].forEach((cls, index) =>
@@ -98,7 +98,7 @@ export class ObjectModal extends SuggestModal<string> {
         instructionEls[2].addClass("event_click");
 
         this.containerEl.addClass("runjs-object-modal");
-        let promptEl = this.containerEl.querySelector(".prompt");
+        const promptEl = this.containerEl.querySelector(".prompt");
         promptEl?.insertBefore(this.titleEl, promptEl.firstChild);
 
         this.promptInputContainerEl?.addEventListener("click", (e) => {
@@ -119,11 +119,11 @@ export class ObjectModal extends SuggestModal<string> {
     }
 
     public get object_root() {
-        return this._objectRroot;
+        return this._objectRoot;
     }
 
     public set object_root(val) {
-        this._objectRroot = val;
+        this._objectRoot = val;
     }
 
     // Returns all available suggestions.
@@ -133,8 +133,8 @@ export class ObjectModal extends SuggestModal<string> {
         if (splits.length == 1) {
             this.object = this.object_root;
             queryModified = query;
-        } else if (Object.keys(this._objectRroot).contains(splits[0])) {
-            let object = this._objectRroot[splits[0]];
+        } else if (Object.keys(this._objectRoot).contains(splits[0])) {
+            let object: {[key: string]: any} = this._objectRoot[splits[0]];
             queryModified = splits.slice(1).join(".");
             for (let i = 1; i < splits.length - 1; i++) {
                 if (!object.hasOwnProperty(splits[i])) {
@@ -146,7 +146,7 @@ export class ObjectModal extends SuggestModal<string> {
             this.object = object;
         } else if (splits[0] == "this") {
             // If object_root has "this" key, it will be executed and this block will not be executed.
-            let object = this;
+            let object: {[key: string]: any} = this;
             queryModified = splits.slice(1).join(".");
             for (let i = 1; i < splits.length - 1; i++) {
                 if (!object.hasOwnProperty(splits[i])) {
@@ -157,7 +157,7 @@ export class ObjectModal extends SuggestModal<string> {
             }
             this.object = object;
         } else {
-            let object = window;
+            let object: {[key: string]: any} = window;
             for (let i = 0; i < splits.length - 1; i++) {
                 if (!object.hasOwnProperty(splits[i])) {
                     break;
@@ -175,11 +175,12 @@ export class ObjectModal extends SuggestModal<string> {
 
     // Renders each suggestion item.
     renderSuggestion(member: string, el: HTMLElement) {
-        let div = el.createEl("div", { cls: "suggestion-content" });
-        let icon = div.createEl("span", { cls: "icon suggestion-icon" });
+        const div = el.createEl("div", { cls: "suggestion-content" });
+        const icon = div.createEl("span", { cls: "icon suggestion-icon" });
+
         div.createEl("span", { cls: "suggestion-title", text: member });
 
-        let info = this.getInfo(member);
+        const info = this.getInfo(member);
 
         if (["object", "array"].contains(info.type)) el.addClass("folder");
 
@@ -214,10 +215,12 @@ export class ObjectModal extends SuggestModal<string> {
     }
 
     _update() {
+        // @ts-ignore
         this.updateSuggestions();
     }
 
     setScopes(plugin: Plugin) {
+        // @ts-ignore
         this.scope.keys.forEach((k) => {
             if (k.modifiers.length == 0 && k.key == "Escape")
                 this.scope.unregister(k);
@@ -241,6 +244,7 @@ export class ObjectModal extends SuggestModal<string> {
             "Enter",
             (evt) => {
                 // console.log("Ctrl+Enter:", evt);
+                // @ts-ignore
                 this.onChooseSuggestion(this.chooser.values[this.chooser.selectedItem], evt);
             }
         );
@@ -259,7 +263,7 @@ export class ObjectModal extends SuggestModal<string> {
     }
 
     gotoUpperGroup(event?: KeyboardEvent) {
-        let splits = this.inputEl.value.split(".");
+        const splits = this.inputEl.value.split(".");
         
         if (splits.length <= 1) return;
 
@@ -301,7 +305,8 @@ export class ObjectModal extends SuggestModal<string> {
     }
 
     close(evt?: KeyboardEvent) {
-        if (this.isClose || evt?.target.classList.contains("modal-bg"))
+        // @ts-ignore
+        if (this.isClose || (evt && evt?.target.classList?.contains("modal-bg")))
             super.close();
 
         if (evt) {
@@ -334,7 +339,7 @@ export class ObjectModal extends SuggestModal<string> {
                 return { type: "array", text: ` (${value.length}) [...]` };
             }
 
-            let texts = [];
+            const texts = [];
 
             for (let item of value) {
                 texts.push(this.makeInfo(item, true).text);
@@ -349,10 +354,11 @@ export class ObjectModal extends SuggestModal<string> {
             };
         }
 
-        let typeofValue = typeof value;
+        const typeofValue = typeof value;
         switch (typeofValue) {
             case "object":
                 let name = value.constructor?.name ?? "";
+
                 if (name == "Object") {
                     name = new String(value)
                         .toString()
@@ -369,7 +375,7 @@ export class ObjectModal extends SuggestModal<string> {
 
                 let text = value?.toString ? value.toString() : "" ?? "";
 
-                let texts = [];
+                const texts = [];
 
                 for (let item of Object.getOwnPropertySymbols(value)) {
                     try {

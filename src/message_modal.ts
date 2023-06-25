@@ -16,7 +16,7 @@ export class MessageModal extends Modal {
     }
 
     onOpen() {
-        let { contentEl, containerEl } = this;
+        const { contentEl } = this;
 
         this.containerEl.addClass("runjs-message-modal");
 
@@ -36,8 +36,8 @@ export class MessageModal extends Modal {
 
     onClose() {
         if(this.callback) this.callback(true);
-        let { contentEl } = this;
-        contentEl.empty();
+
+        this.contentEl.empty();
     }
 }
 
