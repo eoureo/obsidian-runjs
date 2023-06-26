@@ -130,6 +130,7 @@ export default class RunJSPlugin extends Plugin {
     listview: RunJSListView;
     private _iconsObsidian: string[];
     state: string;
+    runJSSymbol: symbol;
 
     regexpCodeblockIndicator: RegExp = /^`{3,}(?:javascript|js) RunJS:(.*)/;
     eventRenameFile: EventRef;
@@ -147,6 +148,18 @@ export default class RunJSPlugin extends Plugin {
         this.codesModule = {};
         this.modulesLoaded = {};
         this.state = "initial";
+        this.runJSSymbol = Symbol(this.manifest.id);
+
+        let oldSymbols = Object.getOwnPropertySymbols(window).filter(elem => elem.toString() == this.runJSSymbol.toString());
+        for(let oldSymbol of oldSymbols) {
+            delete window[(oldSymbol as unknown) as keyof Window];
+        }
+
+        Object.defineProperty(window, this.runJSSymbol, {
+            value: this,
+            writable: false,
+            configurable: true,
+        });
     }
 
     async onload() {
@@ -377,6 +390,7 @@ export default class RunJSPlugin extends Plugin {
 
     onunload() {
         // this.app.workspace.detachLeavesOfType(RunJSCodeListViewType);
+        delete window[(this.runJSSymbol as unknown) as keyof Window];
         this.log("info", "unloaded.");
     }
 
@@ -775,7 +789,8 @@ export default class RunJSPlugin extends Plugin {
     }
 
     modifyImport(codeText: string, folder: string): string {
-        const runjs_import = `await app.plugins.plugins["${this.manifest.id}"].import`;
+        const runjs_import = `await window[Object.getOwnPropertySymbols(window).find(elem => elem.toString() == "Symbol(${this.manifest.id})")].import`;
+
         let text = codeText
             .replace(
                 /\b(?:await\s)?import\(\s*(['"])((?:\\.|(?:(?!\1)[^\\]))*)\1\s*\)/g,

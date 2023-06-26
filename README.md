@@ -4,8 +4,9 @@
 
 RunJS is a plugin for running JavaScript code in [Obsidian](https://obsidian.md/). You can directly run trivial(?) code snippets without having to create a separate plugin. But, like any other plugin, you can run code that manages Obsidian and notes. Codes is written as codeblocks (.md) in Obsidian Notes or as separate files (.js, .mjs). You also have the option to break down your code into executable code and modules to give you better organization.
 
-![](images/Obsidian_RunJS_FrontMatter_test_1600.gif)<p ><small>This is a simple usage example. Click on a command(Toggle cssclass width-100) in the Codelist View. Then add "width-100" value to cssclass in frontmatter. The style saved in CSS Snippets is applied, making note wider. Clicking on it again removes the "width-100" value and the width of the note returns to its original width. Run "Open code file" command and you can see the code. Then you can modify it.</small></p>
+![Obsidian-RunJS FrontMatter test](images/Obsidian_RunJS_FrontMatter_test_1600.gif)<p ><small>This is a simple usage example. Click on a command(Toggle cssclass width-100) in the Codelist View. Then add "width-100" value to cssclass in frontmatter. The style saved in CSS Snippets is applied, making note wider. Clicking on it again removes the "width-100" value and the width of the note returns to its original width. Run "Open code file" command and you can see the code. Then you can modify it.</small></p>
 
+You can see some useful code in [Discussions - Codes](https://github.com/eoureo/obsidian-runjs/discussions). I'll keep posting the codes here. Also, please share and introduce your code to [Discussions - Codes Share](https://github.com/eoureo/obsidian-runjs/discussions/categories/codes-share).
 
 **Caution**:  
 *Codes can do the same thing as other plugins. So bad code can potentially disrupt Obsidian or corrupt notes. It is important to ensure that the code is safe before executing it.*
@@ -14,15 +15,17 @@ RunJS is a plugin for running JavaScript code in [Obsidian](https://obsidian.md/
 ## Features
 
 - **Runs**: There are multiple ways to run code.
-	- **Codelist View**: You can view all code lists. Then run code or view code with one click.
-	- **Run Code Modal**: Select a code in a hierarchical structure of code groups and then run it.
-	- **Autostart**: Run code automatically when RunJS is loaded.
-	- **Add command**: Add a command to be executed to command palette. Then you can additionally set a Hotkey on it.
-	- **Add Ribbon icon**: Add an icon to Ribbon to run code right away.
+  - **Codelist View**: You can view all code lists. Then run code or view code with one click.
+  - **Run Code Modal**: Select a code in a hierarchical structure of code groups and then run it.
+  - **Autostart**: Run code automatically when RunJS is loaded.
+  - **Add command**: Add a command to be executed to command palette. Then you can additionally set a Hotkey on it.
+  - **Add Ribbon icon**: Add an icon to Ribbon to run code right away.
 
 - **Code types**: JavaScript module system is available.
-	- **script**: code set to t:"s" (default) or .js file
-	- **module**: code set to t:"m" or .mjs file
+  - **script**: code set to t:"s" (default) (in codeblock of note) or .js file (in RunJS Scripts folder)
+  - **module**: code set to t:"m" (in codeblock of note) or .mjs file (in RunJS Scripts folder)
+
+- **Coding**: When developing other plugins, the code can be used directly without modification.
 
 
 ## Start - Hello, World!
@@ -37,7 +40,12 @@ new Notice("Hello, World!");
 ```
 ````
 
-![](images/Obsidian_hello_800.gif)
+![Obsidian-RunJS Hello, World!](images/Obsidian_hello_800.gif)
+
+You can see more at the link below.
+
+Hello, World! : Discussions - Codes  
+https://github.com/eoureo/obsidian-runjs/discussions/2  
 
 
 ## Useful starter codes
@@ -47,12 +55,12 @@ new Notice("Hello, World!");
 import * as obsidian from 'obsidian';
 
 // this plugin
-const runJS = app.plugins.plugins["runjs"];
+const runJS = this;
 
 // Using other plugins
-const dailyNotes = app.internalPlugins.plugins["daily-notes"];
-const dataviewAPI = app.plugins.plugins["dataview"].api;
-const templater = app.plugins.plugins["templater-obsidian"].templater;
+const dailyNotes = runJS.app.internalPlugins.plugins["daily-notes"];
+const dataviewAPI = runJS.app.plugins.plugins["dataview"].api;
+const templater = runJS.app.plugins.plugins["templater-obsidian"].templater;
 
 // Using other module
 const url = require('url');
@@ -61,11 +69,11 @@ const url = require('url');
 
 ## References for writing codes
 
-- Home - Developer Documentation
+- Home - Developer Documentation  
   https://docs.obsidian.md/Home
-- obsidianmd/obsidian-api: Type definitions for the latest Obsidian API.
+- obsidianmd/obsidian-api: Type definitions for the latest Obsidian API.  
   https://github.com/obsidianmd/obsidian-api
-- Obsidian Plugin Developer Docs | Obsidian Plugin Developer Docs
+- Obsidian Plugin Developer Docs | Obsidian Plugin Developer Docs  
   https://marcus.se.net/obsidian-plugin-docs/
 
 
@@ -77,12 +85,19 @@ Continuing from the example above ("Hello, World!"), write the following code in
 
 ````markdown
 ```js RunJS:{n:"Obsidian/Open icon modal",t:"s"}
-const runJS = app.plugins.plugins["runjs"];
+// const runJS = app.plugins.plugins["runjs"];
+const runJS = this;
 runJS.openIconModal();
 ```
 ````
 
-![](images/Obsidian_icon_modal.gif)
+![Obsidian-RunJS Icon modal](images/Obsidian_icon_modal.gif)
+
+You can see more at the link below.
+
+Open icon modal  : Discussions - Codes  
+https://github.com/eoureo/obsidian-runjs/discussions/3  
+
 
 ### Scripts & Modules
 
@@ -104,13 +119,13 @@ new Notice("[code 1] Hello, World!");
 console.log("[code 1] Hello, World!");
 this.log("info", "[code 1]", "Hello, World!");
 
-myFunc1("[code 1] Run module func1.");
+myFunc1(this.app, "[code 1] Run module func1.");
 myFunc2("[code 1] Run module func2.");
 myFunc3("[code 1] Run module func3.");
 ```
 
 ```js RunJS:{n:"Test/module 1", t:"m"}
-export function myFunc1(...args) {
+export function myFunc1(app, ...args) {
   let runJS = app.plugins.plugins["runjs"];
   runJS.log("info", "module 1:", ...args);
   console.log("module 1:", ...args);
@@ -135,7 +150,7 @@ import { myFunc3 } from './module 3.mjs'; // file: ./testFolder/module 3.mjs
 console.log("[code 2] Hello, World!");
 this.log("error", "[code 2] Hello, World!");
 
-myFunc1("[code 2] Run module func1.");
+myFunc1(this.app, "[code 2] Run module func1.");
 myFunc2("[code 2] Run module func2.");
 myFunc3("[code 2] Run module func3.");
 ```
@@ -176,14 +191,14 @@ export function myFunc3(...args) {
 
 You can see the above codes running in the image below.
 
-![](images/Obsidian_test_1600.gif)
+![Obsidian-RunJS test](images/Obsidian_test_1600.gif)
 
 
 ## Settingtab
 
 Here is the RunJS settings dialog.
 
-![](images/RunJS_settingtab.png)
+![Obsidian-RunJS setting](images/RunJS_settingtab.png)
 
 ## Donate
 
