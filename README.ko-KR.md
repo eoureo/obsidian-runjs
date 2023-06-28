@@ -4,12 +4,7 @@
 
 RunJS는 [옵시디언](https://obsidian.md/)에서 JavaScript 코드를 실행하기 위한 플러그인입니다. 별도의 플러그인을 생성할 필요 없이 사소한(?) 코드들을 바로 실행할 수 있습니다. 그러나 다른 플러그인과 마찬가지로 Obsidian 및 노트들을 다루는 코드를 실행할 수 있습니다. 실행 코드는 옵시디언 노트들의 코드블록(.md) 또는 별도의 파일(.js, .mjs)로 작성됩니다. 또한 코드를 실행 가능한 코드와 모듈로 나누어 코드 관리를 할 수 있도록 합니다.
 
-![Obsidian-RunJS FrontMatter test](images/Obsidian_RunJS_FrontMatter_test_1600.gif)<p ><small>간단한 사용 방법을 보여 줍니다. Codelist View에서 명령어(Toggle cssclass width-100)를 클릭합니다. 그러면 frontmatter의 cssclass에 "width-100" 값을 추가합니다. CSS Snippets에 저장된 스타일이 적용되어 노트 너비가 넓어집니다. 다시 클릭하면 "width-100" 값이 제거되고 노트의 너비가 원래 너비로 돌아갑니다. "코드 파일 열기" 명령을 실행하면 그 코드를 볼 수 있습니다. 그런 다음 필요하면 고칠 수도 있습니다.</small></p>
-
-[Discussions - Codes](https://github.com/eoureo/obsidian-runjs/discussions)에서 쓸모있는 코드들을 볼 수 있습니다. 여기에 계속 코드들을 올리도록 하겠습니다. 또한 [Discussions - Codes Share](https://github.com/eoureo/obsidian-runjs/discussions/categories/codes-share)에  당신이 만든 코드를 공유하고 소개하여 주세요.
-
-**주의 사항**:  
-*코드들은 다른 플러그인들과 동일한 작업을 수행할 수 있습니다. 따라서 잘못된 코드는 옵시디언이나 노트들을 망가뜨릴 수 있습니다. 코드를 실행하기 전에 안전한 코드인지 확인해야 합니다.*
+![Obsidian-RunJS FrontMatter test](images/Obsidian_RunJS_FrontMatter_test_1600.gif)<p ><small>간단한 [사용 방법](https://github.com/eoureo/obsidian-runjs/discussions/10)을 보여 줍니다. Codelist View에서 명령어(Toggle cssclass width-100)를 클릭합니다. 그러면 frontmatter의 cssclass에 "width-100" 값을 추가합니다. CSS Snippets에 저장된 스타일이 적용되어 노트 너비가 넓어집니다. 다시 클릭하면 "width-100" 값이 제거되고 노트의 너비가 원래 너비로 돌아갑니다. "코드 파일 열기" 명령을 실행하면 그 코드를 볼 수 있습니다. 그런 다음 필요하면 고칠 수도 있습니다.</small></p>
 
 
 ## 특징
@@ -22,10 +17,26 @@ RunJS는 [옵시디언](https://obsidian.md/)에서 JavaScript 코드를 실행�
   - **리본 아이콘 추가**: 코드를 바로 실행할 수 있도록 리본에 아이콘을 추가합니다.
 
 - **코드 종류**: 자바스크립트 모듈 시스템이 가능합니다.
-  - **스크립트**: t:"s"(기본값)로 설정된 코드 (노트의 코드블럭 안에 위치) 또는 .js 파일 (RunJS 스크립트 폴더 안에 위치)
-  - **모듈**: t:"m"로 설정된 코드 (노트의 코드블럭 안에 위치)  또는 .mjs 파일 (RunJS 스크립트 폴더 안에 위치)
+  - **스크립트**:
+    - 노트의 코드블럭 안에 t:"s"(기본값)로 설정된 코드
+    - .js 파일 (RunJS 스크립트 폴더 안에 위치)
+  - **모듈**:
+    - 노트의 코드블럭 안에 t:"m"로 설정된 코드
+    - .mjs 파일 (RunJS 스크립트 폴더 안에 위치)
 
 - **코드 작성**: 다른 플러그인을 개발할 때 코드를 수정없이 바로 사용할 수 있습니다.
+
+
+## 코드를 얻는 방법
+
+자신 환경에 맞게 코드를 수정하세요. 일반적으로 바꿀 필요가 있는 설정은 코드 맨 위에 있습니다.
+
+- **Codes of RunJS**: [Discussions - Codes](https://github.com/eoureo/obsidian-runjs/discussions)에서 쓸모있는 코드들을 볼 수 있습니다. 여기에 계속 코드들을 올리도록 하겠습니다.
+- **Codes Share**: [Discussions - Codes Share](https://github.com/eoureo/obsidian-runjs/discussions/categories/codes-share)에  당신이 만든 코드를 공유하고 소개하여 주세요.
+
+
+**⚠️ 주의 사항**:  
+*코드들은 다른 플러그인들과 동일한 작업을 수행할 수 있습니다. 따라서 잘못된 코드는 옵시디언이나 노트들을 망가뜨릴 수 있습니다. 코드를 실행하기 전에 안전한 코드인지 확인해야 합니다.*
 
 
 ## 시작 - Hello, World!
@@ -45,7 +56,7 @@ new Notice("Hello, World!");
 아래 링크에서 더 볼 수 있습니다.
 
 Hello, World! : Discussions - Codes  
-https://github.com/eoureo/obsidian-runjs/discussions/2  
+[https://github.com/eoureo/obsidian-runjs/discussions/2](https://github.com/eoureo/obsidian-runjs/discussions/2)
 
 
 ## 쓸모있는 코드들
@@ -95,8 +106,8 @@ runJS.openIconModal();
 
 아래 링크에서 더 보실 수 있습니다.
 
-Open icon modal  : Discussions - Codes  
-https://github.com/eoureo/obsidian-runjs/discussions/3  
+Open icon modal : Discussions - Codes  
+[https://github.com/eoureo/obsidian-runjs/discussions/3](https://github.com/eoureo/obsidian-runjs/discussions/3)
 
 
 ### 스크립트와 모듈

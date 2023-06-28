@@ -120,6 +120,14 @@ interface ModulesLoaded {
     [name: string]: { codeText: string; module: Module | null };
 }
 
+interface RefreshJob {
+    time?: number; timeoutId?: NodeJS.Timeout;
+}
+
+interface RefreshJobs {
+    [file_path: string]: RefreshJob;
+}
+
 export default class RunJSPlugin extends Plugin {
     settings: RunJSPluginSettings;
     codes: Code[];
@@ -131,6 +139,9 @@ export default class RunJSPlugin extends Plugin {
     private _iconsObsidian: string[];
     state: string;
     runJSSymbol: symbol;
+    refreshId: number;
+    refreshJobs: RefreshJobs;
+    refreshLimitTime: number;
 
     regexpCodeblockIndicator: RegExp = /^`{3,}(?:javascript|js) RunJS:(.*)/;
     eventRenameFile: EventRef;
@@ -149,6 +160,9 @@ export default class RunJSPlugin extends Plugin {
         this.modulesLoaded = {};
         this.state = "initial";
         this.runJSSymbol = Symbol(this.manifest.id);
+        this.refreshJobs = {};
+        this.refreshLimitTime = 3000;
+        this.refreshId = Date.now();
 
         let oldSymbols = Object.getOwnPropertySymbols(window).filter(elem => elem.toString() == this.runJSSymbol.toString());
         for(let oldSymbol of oldSymbols) {
@@ -292,7 +306,12 @@ export default class RunJSPlugin extends Plugin {
     }
 
     handleRenameFile(file: TAbstractFile, oldPath: string) {
-        if(!(file instanceof TFile)) return;
+        if (!(file instanceof TFile)) return;
+
+        this.applyRenameFile(file, oldPath);
+    }
+
+    applyRenameFile(file: TAbstractFile, oldPath: string) {
 
         let checkChanged = false;
 
@@ -310,15 +329,35 @@ export default class RunJSPlugin extends Plugin {
     }
 
     async handleModifyFile(file: TAbstractFile) {
-        if(!(file instanceof TFile)) return;
+        if (!(file instanceof TFile)) return;
 
+        let job: RefreshJob;
+        const time = Date.now();
+        const jobName = "[modify]" + file.path;
+
+        if (jobName in this.refreshJobs) {
+            job = this.refreshJobs[jobName];
+            clearTimeout(job.timeoutId);
+        } else {
+            job = {};
+            this.refreshJobs[jobName] = job;
+        }
+
+        job.time = time;
+        job.timeoutId = setTimeout(() => {
+            delete this.refreshJobs[jobName];
+            this.applyModifyFile(file);
+        }, this.refreshLimitTime);
+}
+
+    async applyModifyFile(file: TAbstractFile) {
         await this.handleDeleteFile(file, false);
         await sleep(500);
         await this.handleCreateFile(file);
     }
 
     async handleCreateFile(file: TAbstractFile) {
-        if(!(file instanceof TFile)) return;
+        if (!(file instanceof TFile)) return;
         
         let checkChanged = false;
 
@@ -360,7 +399,7 @@ export default class RunJSPlugin extends Plugin {
     }
 
     handleDeleteFile(file: TAbstractFile, doUpdate: boolean = true) {
-        if(!(file instanceof TFile)) return;
+        if (!(file instanceof TFile)) return;
 
         const codesTarget = [];
 
@@ -483,12 +522,47 @@ export default class RunJSPlugin extends Plugin {
     }
     
     async refresh() {
-        await this.refreshCodes();
-        new Notice(this.manifest.name + ": codes updated");
-        this.listview.update();
+        const changed = await this.refreshCodes();
+        
+        if (changed) {
+            new Notice(this.manifest.name + ": codes updated");
+            this.listview.update();
+        }
     }
 
-    async refreshCodes() {
+    async refreshCodes(): Promise<boolean> {
+        let changed: boolean = true;
+        
+        for ( let jobName in this.refreshJobs) {
+            clearTimeout(this.refreshJobs[jobName].timeoutId);
+        }
+        Object.keys(this.refreshJobs).forEach(
+            (jobName) => delete this.refreshJobs[jobName]
+        );
+
+        const refreshId = Date.now();
+        this.refreshId = refreshId;
+
+        const codesDataNew = {
+            codes: [],
+            codesScript: [],
+            codesModule: {}
+        }
+
+        if (refreshId < this.refreshId) return false;
+
+        await this.iterateCodeblocks(this.appendCode.bind(codesDataNew));
+
+        const tFolder: TFolder = <TFolder>(
+            this.app.vault.getAbstractFileByPath(this.settings.scriptsFolder)
+        );
+
+        if (refreshId < this.refreshId) return false;
+
+        await this.iterateScriptsFolder(tFolder, this.appendCode.bind(codesDataNew));
+
+        if (refreshId < this.refreshId) return false;
+
         // initialize data
         this.codes.splice(0, this.codes.length);
         this.codesScript.splice(0, this.codesScript.length);
@@ -497,13 +571,11 @@ export default class RunJSPlugin extends Plugin {
             (key) => delete this.codesModule[key]
         );
 
-        await this.iterateCodeblocks(this.appendCode.bind(this));
+        this.codes.push(...codesDataNew.codes);
+        this.codesScript.push(...codesDataNew.codesScript);
+        Object.assign(this.codesModule, codesDataNew.codesModule);
 
-        const tFolder: TFolder = <TFolder>(
-            this.app.vault.getAbstractFileByPath(this.settings.scriptsFolder)
-        );
-        
-        await this.iterateScriptsFolder(tFolder, this.appendCode.bind(this));
+        return changed;
     }
 
     appendCode(code: Code) {
@@ -737,6 +809,8 @@ export default class RunJSPlugin extends Plugin {
     async import(codeName: string) {
         if (codeName === "obsidian") {
             return obsidian;
+        } else if (codeName.startsWith("https://")) {
+            return await import(codeName);
         }
 
         const code = this.codesModule[codeName];
