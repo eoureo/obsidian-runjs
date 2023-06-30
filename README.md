@@ -2,9 +2,9 @@
 
 *Let's run JavaScript easily and simply in Obsidian.*
 
-RunJS is a plugin for running JavaScript code in [Obsidian](https://obsidian.md/). You can directly run trivial(?) code snippets without having to create a separate plugin. But, like any other plugin, you can run code that manages Obsidian and notes. Codes is written as codeblocks (.md) in Obsidian Notes or as separate files (.js, .mjs). You also have the option to break down your code into executable code and modules to give you better organization.
+RunJS is a plugin for running JavaScript code in [Obsidian](https://obsidian.md/). You can directly run trivial(?) code snippets without having to create a separate plugin. But, like any other plugin, you can run code that manages Obsidian and notes. Codes is written as codeblocks (.md) in Obsidian Notes or as separate files (.js, .mjs). You also have the option to break down your code into executable code and module to give you better organization.
 
-![Obsidian-RunJS FrontMatter test](images/Obsidian_RunJS_FrontMatter_test_1600.gif)<p ><small>This is a simple usage [example](https://github.com/eoureo/obsidian-runjs/discussions/10). Click on a command(Toggle cssclass width-100) in the Codelist View. Then add "width-100" value to cssclass in frontmatter. The style saved in CSS Snippets is applied, making note wider. Clicking on it again removes the "width-100" value and the width of the note returns to its original width. Run "Open code file" command and you can see the code. Then you can modify it.</small></p>
+![Obsidian-RunJS FrontMatter test](images/Obsidian_RunJS_FrontMatter_test_1600.gif)<p ><small>This is a simple usage example. Click on a command([Toggle cssclass width-100](https://github.com/eoureo/obsidian-runjs/discussions/10)) in the Codelist View. Then add "width-100" value to cssclass in frontmatter. The style saved in CSS Snippets is applied, making note wider. Clicking on it again removes the "width-100" value and the width of the note returns to its original width. Run "Open code file" command and you can see the code. Then you can modify it.</small></p>
 
 
 ## Features

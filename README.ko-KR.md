@@ -4,7 +4,7 @@
 
 RunJS는 [옵시디언](https://obsidian.md/)에서 JavaScript 코드를 실행하기 위한 플러그인입니다. 별도의 플러그인을 생성할 필요 없이 사소한(?) 코드들을 바로 실행할 수 있습니다. 그러나 다른 플러그인과 마찬가지로 Obsidian 및 노트들을 다루는 코드를 실행할 수 있습니다. 실행 코드는 옵시디언 노트들의 코드블록(.md) 또는 별도의 파일(.js, .mjs)로 작성됩니다. 또한 코드를 실행 가능한 코드와 모듈로 나누어 코드 관리를 할 수 있도록 합니다.
 
-![Obsidian-RunJS FrontMatter test](images/Obsidian_RunJS_FrontMatter_test_1600.gif)<p ><small>간단한 [사용 방법](https://github.com/eoureo/obsidian-runjs/discussions/10)을 보여 줍니다. Codelist View에서 명령어(Toggle cssclass width-100)를 클릭합니다. 그러면 frontmatter의 cssclass에 "width-100" 값을 추가합니다. CSS Snippets에 저장된 스타일이 적용되어 노트 너비가 넓어집니다. 다시 클릭하면 "width-100" 값이 제거되고 노트의 너비가 원래 너비로 돌아갑니다. "코드 파일 열기" 명령을 실행하면 그 코드를 볼 수 있습니다. 그런 다음 필요하면 고칠 수도 있습니다.</small></p>
+![Obsidian-RunJS FrontMatter test](images/Obsidian_RunJS_FrontMatter_test_1600.gif)<p ><small>간단한 사용 방법을 보여 줍니다. Codelist View에서 명령어([Toggle cssclass width-100](https://github.com/eoureo/obsidian-runjs/discussions/10))를 클릭합니다. 그러면 frontmatter의 cssclass에 "width-100" 값을 추가합니다. CSS Snippets에 저장된 스타일이 적용되어 노트 너비가 넓어집니다. 다시 클릭하면 "width-100" 값이 제거되고 노트의 너비가 원래 너비로 돌아갑니다. "코드 파일 열기" 명령을 실행하면 그 코드를 볼 수 있습니다. 그런 다음 필요하면 고칠 수도 있습니다.</small></p>
 
 
 ## 특징
