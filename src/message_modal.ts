@@ -12,7 +12,7 @@ export class MessageModal extends Modal {
         this.message = message;
         this.title = title;
         this.message = message;
-        if(callback) this.callback = callback;
+        if (callback) this.callback = callback;
     }
 
     onOpen() {
@@ -24,18 +24,18 @@ export class MessageModal extends Modal {
 
         contentEl.setText(this.message);
 
-        const buttonDiv = contentEl.createDiv({cls: "modal-button-container"});
+        const buttonDiv = contentEl.createDiv({ cls: "modal-button-container" });
 
         new ButtonComponent(buttonDiv).setButtonText("OK")
             .setCta()
             .onClick(() => {
-                if(this.callback) this.callback(true);
+                if (this.callback) this.callback(true);
                 this.close();
             });
     }
 
     onClose() {
-        if(this.callback) this.callback(true);
+        if (this.callback) this.callback(true);
 
         this.contentEl.empty();
     }

@@ -9,7 +9,7 @@ import {
 import { Code } from "./main";
 import { LIST_ICON } from "./constants";
 
-export class RunJSCodeModal extends SuggestModal<Code> {
+export class RunJSCodeListModal extends SuggestModal<Code> {
     codes: Code[];
     onSubmit: (code: Code) => void;
     plugin: Plugin;
@@ -68,9 +68,13 @@ export class RunJSCodeModal extends SuggestModal<Code> {
             this.gotoUpperGroup.bind(this)
         );
 
-        this.containerEl.addClass("runjs-code-modal");
-        const promptEl = this.containerEl.querySelector(".prompt");
-        promptEl?.insertBefore(this.titleEl, promptEl.firstChild);
+        this.containerEl.addClass("runjs-codelist-modal");
+
+        // const promptEl = this.containerEl.querySelector(".prompt");
+        // promptEl?.insertBefore(this.titleEl, promptEl.firstChild);
+        if (this.titleEl && this.titleEl.parentElement == null) {
+            this.modalEl?.insertBefore(this.titleEl, this.modalEl.firstChild);
+        }
 
         if (this.promptInputContainerEl) this.promptInputContainerEl.dataset.parent = this.groupParent;
         this.promptInputContainerEl?.addEventListener("click", (e) => {

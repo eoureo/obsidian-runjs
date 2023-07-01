@@ -28,7 +28,7 @@ export class ConfirmModal extends Modal {
         const buttonDiv = contentEl.createDiv({cls: "modal-button-container"});
 
         new ButtonComponent(buttonDiv)
-            .setButtonText("OK")
+            .setButtonText("Yes")
             .setCta()
             .onClick(() => {
                 this.callback(true);
@@ -36,23 +36,20 @@ export class ConfirmModal extends Modal {
             })
             .setCta();
 
-        new ButtonComponent(buttonDiv).setButtonText("Cancel").onClick(() => {
+        new ButtonComponent(buttonDiv).setButtonText("No").onClick(() => {
             this.callback(false);
             this.close();
         });
     }
     
     onClose() {
-        this.callback(false);
         const { contentEl } = this;
         contentEl.empty();
     }
 }
 
 export async function openConfirmModal (app: App, title: string | null, message: string, callback?: ConfirmCallback) {
-    let return_value;
-
-    const promise = new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
         new ConfirmModal(
             app,
             title,
@@ -62,12 +59,9 @@ export async function openConfirmModal (app: App, title: string | null, message:
             })
         ).open();
     });
-
-    await promise.then(value => {return_value = value});
-    return return_value;
 }
 
-export default class ConfirmDeleteModal extends Modal {
+export class ConfirmDeleteModal extends Modal {
     title: string | null;
     message: string;
     callback: ConfirmCallback;
@@ -125,4 +119,3 @@ export function openConfirmDeleteModal (app: App, title: string, message: string
         callback
     ).open();
 }
-

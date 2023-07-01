@@ -1,34 +1,34 @@
-.runjs-listview-container
+.runjs-codelist-view-container
 {
     font-size: var(--nav-item-size);
     font-weight: var(--nav-item-weight);
     color: var(--nav-item-color);
 }
 
-.runjs-listview-container .nav-header .right {
+.runjs-codelist-view-container .nav-header .right {
     float: right;
 }
-.runjs-listview-container .nav-header .sort.clickable-icon {
+.runjs-codelist-view-container .nav-header .sort.clickable-icon {
     padding: 0;
 }
 
-.runjs-listview-container .nav-header .sort .icon.sort_asc {
+.runjs-codelist-view-container .nav-header .sort .icon.sort_asc {
     display: inline-block;
 }
 
-.runjs-listview-container .nav-header .sort .icon.sort_desc {
+.runjs-codelist-view-container .nav-header .sort .icon.sort_desc {
     display: none;
 }
 
-.runjs-listview-container .nav-header .sort.descend .icon.sort_asc {
+.runjs-codelist-view-container .nav-header .sort.descend .icon.sort_asc {
     display: none;
 }
 
-.runjs-listview-container .nav-header .sort.descend .icon.sort_desc {
+.runjs-codelist-view-container .nav-header .sort.descend .icon.sort_desc {
     display: inline-block;
 }
 
-.runjs-listview-container .icon {
+.runjs-codelist-view-container .icon {
     display: inline-block;
     align-items: center;
     padding: 0;
@@ -37,114 +37,114 @@
     color: var(--icon-color);
 }
 
-.runjs-listview-container .icon .svg-icon:not(.right-triangle) {
+.runjs-codelist-view-container .icon .svg-icon:not(.right-triangle) {
     /* --icon-size: var(--icon-xs); */
     --icon-stroke: var(--icon-s-stroke-width);
 }
 
-.runjs-listview-container .view-content .icon .svg-icon:not(.right-triangle) {
+.runjs-codelist-view-container .view-content .icon .svg-icon:not(.right-triangle) {
     --icon-size: var(--icon-xs);
 }
 
-.runjs-listview-container .view-content .icon {
+.runjs-codelist-view-container .view-content .icon {
     opacity: var(--icon-opacity);
     opacity: calc(var(--icon-opacity) * 0.6);
 }
 
-.runjs-listview-menu .menu-item,
-.runjs-listview-container .is-clickable {
+.runjs-codelist-view-menu .menu-item,
+.runjs-codelist-view-container .is-clickable {
     cursor: pointer;
 }
 
 @media (hover: hover) {
-.runjs-listview-menu .menu-item:active,
-.runjs-listview-menu .menu-item:active .svg-icon:not(.right-triangle),
+.runjs-codelist-view-menu .menu-item:active,
+.runjs-codelist-view-menu .menu-item:active .svg-icon:not(.right-triangle),
 body:not(.is-grabbing) 
-.runjs-listview-container .tree-item-self.is-clickable:active,
-.runjs-listview-container .tree-item-self.is-clickable:active .svg-icon:not(.right-triangle),
-.runjs-listview-container .icon.is-clickable:active .svg-icon:not(.right-triangle) {
+.runjs-codelist-view-container .tree-item-self.is-clickable:active,
+.runjs-codelist-view-container .tree-item-self.is-clickable:active .svg-icon:not(.right-triangle),
+.runjs-codelist-view-container .icon.is-clickable:active .svg-icon:not(.right-triangle) {
     color: orange;
     background-color: rgba(255, 255, 255, 0.1);
 }
 }
 
-.runjs-listview-container .tree-item.module .tree-item-self.is-clickable {
+.runjs-codelist-view-container .tree-item.module .tree-item-self.is-clickable {
     cursor: initial;
 }
 
-.runjs-listview-container .view-content .tree-item.favorite .tree-item-self:after {
+.runjs-codelist-view-container .view-content .tree-item.favorite .tree-item-self:after {
     content: "❤️";
     font-size: var(--nav-item-size);
     margin-left: auto;
     opacity: 0.3;
 }
 
-.runjs-listview-container .view-content .tree-item.favorite:after svg{
+.runjs-codelist-view-container .view-content .tree-item.favorite:after svg{
     stroke: var(--nav-item-color);
 }
 
-.runjs-listview-container .nav-header .ft-item.favorite,
-.runjs-listview-menu .ft-item.favorite
+.runjs-codelist-view-container .nav-header .ft-item.favorite,
+.runjs-codelist-view-menu .ft-item.favorite
 {
     opacity: 0.3;
 }
 
-.runjs-listview-container.ft-favorite .nav-header .ft-item.favorite,
-.runjs-listview-menu.ft-favorite .ft-item.favorite {
+.runjs-codelist-view-container.ft-favorite .nav-header .ft-item.favorite,
+.runjs-codelist-view-menu.ft-favorite .ft-item.favorite {
     opacity: 1;
 }
 
-.runjs-listview-menu .ft-item
+.runjs-codelist-view-menu .ft-item
 {
     opacity: 0.3;
 }
 
-.runjs-listview-menu.ft-script .ft-item.script,
-.runjs-listview-menu.ft-module .ft-item.module,
-.runjs-listview-menu.ft-file .ft-item.file,
-.runjs-listview-menu.ft-codeblock .ft-item.codeblock
+.runjs-codelist-view-menu.ft-script .ft-item.script,
+.runjs-codelist-view-menu.ft-module .ft-item.module,
+.runjs-codelist-view-menu.ft-file .ft-item.file,
+.runjs-codelist-view-menu.ft-codeblock .ft-item.codeblock
 {
     opacity: 1;
 }
 
-.runjs-listview-container .view-content .tree-item {
+.runjs-codelist-view-container .view-content .tree-item {
     white-space: nowrap;
 }
 
-.runjs-listview-container .view-content .tree-item .tree-item-self:not(.nav-folder-title) .icon:first-child,
-.runjs-listview-container.ft-script:not(.ft-module) .view-content .icon.form,
-.runjs-listview-container.ft-module:not(.ft-script) .view-content .icon.form
+.runjs-codelist-view-container .view-content .tree-item .tree-item-self:not(.nav-folder-title) .icon:first-child,
+.runjs-codelist-view-container.ft-script:not(.ft-module) .view-content .icon.form,
+.runjs-codelist-view-container.ft-module:not(.ft-script) .view-content .icon.form
 {
     margin-left: calc(-1 * var(--size-4-5));
 }
 
-.runjs-listview-container.ft-script:not(.ft-module) .view-content .icon.type,
-.runjs-listview-container.ft-module:not(.ft-script) .view-content .icon.type {
+.runjs-codelist-view-container.ft-script:not(.ft-module) .view-content .icon.type,
+.runjs-codelist-view-container.ft-module:not(.ft-script) .view-content .icon.type {
     display: none;
 }
 
-.runjs-listview-container .view-content .tree-item .tree-item-self .name-node {
+.runjs-codelist-view-container .view-content .tree-item .tree-item-self .name-node {
     width: 100%;
 }
 
-.runjs-listview-container .view-content .tree-item.is-collapsed .tree-item-children {
+.runjs-codelist-view-container .view-content .tree-item.is-collapsed .tree-item-children {
     display: none;
 }
 
-.runjs-listview-container .view-content .tree-item .tree-item-self .group-name {
+.runjs-codelist-view-container .view-content .tree-item .tree-item-self .group-name {
     display: none;
 }
 
-.runjs-listview-container.ft-favorite .view-content .tree-item:not(.nav-folder):not(.favorite),
-.runjs-listview-container.ft-favorite .view-content .tree-item.nav-folder:not(.has-favorite),
-.runjs-listview-container.ft-script:not(.ft-module) .view-content .tree-item.module,
-.runjs-listview-container.ft-module:not(.ft-script) .view-content .tree-item.script,
-.runjs-listview-container.ft-file:not(.ft-codeblock) .view-content .tree-item.codeblock,
-.runjs-listview-container.ft-codeblock:not(.ft-file) .view-content .tree-item.file {
+.runjs-codelist-view-container.ft-favorite .view-content .tree-item:not(.nav-folder):not(.favorite),
+.runjs-codelist-view-container.ft-favorite .view-content .tree-item.nav-folder:not(.has-favorite),
+.runjs-codelist-view-container.ft-script:not(.ft-module) .view-content .tree-item.module,
+.runjs-codelist-view-container.ft-module:not(.ft-script) .view-content .tree-item.script,
+.runjs-codelist-view-container.ft-file:not(.ft-codeblock) .view-content .tree-item.codeblock,
+.runjs-codelist-view-container.ft-codeblock:not(.ft-file) .view-content .tree-item.file {
     display: none;
 }
 
-.runjs-listview-container  .view-content .tree-item.nav-folder > .tree-item-self::after {
+.runjs-codelist-view-container  .view-content .tree-item.nav-folder > .tree-item-self::after {
     content: '(' attr(data-item_len) ')';
     white-space: nowrap;
     margin-left: auto;
@@ -153,7 +153,6 @@ body:not(.is-grabbing)
 
 .runjs-settingtab .setting-head .setting-item-info > * {
     display: inline-block;
-    float: left;
 }
 
 .runjs-settingtab .setting-head .setting-item-info .setting-item-description {
@@ -204,7 +203,7 @@ body:not(.is-grabbing)
 }
 
 .runjs-settingtab .setting-log-check::after {
-    content: attr(aria-label);
+    content: attr(data-label);
     margin-left: 0.5em;
 }
 
@@ -225,18 +224,18 @@ body:not(.is-grabbing)
     margin: 0 auto;
 }
 
-.runjs-code-modal .modal-title {
+.runjs-codelist-modal .modal-title {
     padding: var(--size-4-3);
 }
 
-.runjs-code-modal .suggestion-icon {
+.runjs-codelist-modal .suggestion-icon {
     margin-right: 0.5em;
     vertical-align: middle;
     opacity: 0.5;
 }
 
 .runjs-object-modal .folder .suggestion-content::after,
-.runjs-code-modal .folder .suggestion-content::after {
+.runjs-codelist-modal .folder .suggestion-content::after {
     content: "▶";
     font-size: 0.5em;
     margin-top: 0.5em;
@@ -244,20 +243,20 @@ body:not(.is-grabbing)
     opacity: 0.5;
 }
 
-.runjs-code-modal .icon .svg-icon:not(.right-triangle) {
+.runjs-codelist-modal .icon .svg-icon:not(.right-triangle) {
     --icon-size: var(--icon-m);
     --icon-stroke: var(--icon-s-stroke-width);
 }
 
-.runjs-code-modal[data-is_group=true] .prompt-instruction:not(.group){
+.runjs-codelist-modal[data-is_group=true] .prompt-instruction:not(.group){
     display: none;
 }
 
-.runjs-code-modal[data-is_group=false] .prompt-instruction:not(.normal){
+.runjs-codelist-modal[data-is_group=false] .prompt-instruction:not(.normal){
     display: none;
 }
 
-.runjs-code-modal[data-is_group=true] .prompt-input-container::before {
+.runjs-codelist-modal[data-is_group=true] .prompt-input-container::before {
     content: attr(data-parent);
     margin: auto calc( 0.2em - var(--size-4-6)) auto 0;
     z-index: 9999;
@@ -269,18 +268,18 @@ body:not(.is-grabbing)
     padding-left: calc( 0.2em + var(--size-4-6));
 }
 
-.runjs-code-modal .prompt-input-container:not([data-parent='']):hover::before {
+.runjs-codelist-modal .prompt-input-container:not([data-parent='']):hover::before {
     background-color: var(--background-modifier-hover);
     cursor: pointer;
 }
 
 .runjs-object-modal .prompt-instruction.event_click,
-.runjs-code-modal .prompt-instruction {
+.runjs-codelist-modal .prompt-instruction {
     cursor: pointer;
 }
 
 .runjs-object-modal .prompt-instruction.event_click:hover,
-.runjs-code-modal .prompt-instruction:hover {
+.runjs-codelist-modal .prompt-instruction:hover {
     background-color: var(--background-modifier-hover);
 }
 
@@ -302,4 +301,38 @@ body:not(.is-grabbing)
 .runjs-prompt-modal .modal-content {
     user-select: text;
     -webkit-user-select: text;
+}
+
+.runjs-prompt-modal textarea.prompt-input {
+    width: 100%;
+    /* padding: var(--size-4-6); */
+    background-color: var(--background-primary);
+    font-size: var(--font-ui-medium);
+    border: none;
+    height: 240px;
+    border-radius: 0;
+    border-bottom: 1px solid var(--background-secondary);
+}
+
+.runjs-prompt-modal input.prompt-input,
+.runjs-prompt-modal textarea.prompt-input {
+    padding: inherit;
+}
+
+.runjs-prompt-modal textarea.prompt-input:hover,
+.runjs-prompt-modal textarea.prompt-input:focus,
+.runjs-prompt-modal textarea.prompt-input:focus-visible {
+    border-bottom: 1px solid var(--background-secondary);
+    box-shadow: none;
+}
+
+.runjs-suggest-modal .modal-title {
+    padding: var(--size-4-3);
+    padding-bottom: 0;
+}
+
+.runjs-suggest-modal .modal-content {
+    padding: var(--size-4-3);
+    padding-top: 0;
+    padding-bottom: 0;
 }

@@ -98,8 +98,12 @@ export class ObjectModal extends SuggestModal<string> {
         instructionEls[2].addClass("event_click");
 
         this.containerEl.addClass("runjs-object-modal");
-        const promptEl = this.containerEl.querySelector(".prompt");
-        promptEl?.insertBefore(this.titleEl, promptEl.firstChild);
+
+        // const promptEl = this.containerEl.querySelector(".prompt");
+        // promptEl?.insertBefore(this.titleEl, promptEl.firstChild);
+        if (this.titleEl && this.titleEl.parentElement == null) {
+            this.modalEl?.insertBefore(this.titleEl, this.modalEl.firstChild);
+        }
 
         this.promptInputContainerEl?.addEventListener("click", (e) => {
             if (e.target === this.promptInputContainerEl) {

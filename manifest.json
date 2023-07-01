@@ -1,9 +1,9 @@
 {
 	"id": "runjs",
 	"name": "RunJS",
-	"version": "0.3.0",
+	"version": "0.4.0",
 	"minAppVersion": "0.15.0",
-	"description": "RunJS is a plugin for running JavaScript code in Obsidian (https://obsidian.md).",
+	"description": "Run easily JavaScript codes for managing Obsidian and its notes.",
 	"author": "eoureo",
 	"authorUrl": "https://github.com/eoureo",
 	"fundingUrl": "https://buymeacoffee.com/eoureo",

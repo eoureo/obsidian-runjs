@@ -26,7 +26,7 @@ import {
     LIST_ICON,
     RIBBON_ICON_DEFAULT_ICON,
 } from "./constants";
-import { RunJSCodeModal } from "./code_modal";
+import { RunJSCodeListModal } from "./codelist_modal";
 import { openConfirmDeleteModal } from "./confirm_modal";
 import { openMessageModal } from "./message_modal";
 
@@ -58,23 +58,23 @@ export class RunJSSettingTab extends PluginSettingTab {
             .setName(this.plugin.manifest.name)
             .setDesc("(v" + this.plugin.manifest.version + ")")
             .setClass("setting-item-heading") //  setting-head
-            .addExtraButton((component) => {
-                component
-                    .setIcon("refresh-ccw")
-                    .setTooltip("Refresh codelist")
-                    .onClick(() => {
-                        this.plugin.refresh();
-                    });
-            })
-            .addExtraButton((component) => {
-                component
-                    .setIcon("refresh-cw")
-                    .setTooltip("Reload plugin")
-                    .onClick(() => {
-                        this.plugin.reload();
-                    });
-                component.extraSettingsEl.classList.add("mod-warning");
-            })
+            // .addExtraButton((component) => {
+            //     component
+            //         .setIcon("refresh-ccw")
+            //         .setTooltip("Refresh codelist")
+            //         .onClick(() => {
+            //             this.plugin.refresh();
+            //         });
+            // })
+            // .addExtraButton((component) => {
+            //     component
+            //         .setIcon("refresh-cw")
+            //         .setTooltip("Reload plugin")
+            //         .onClick(() => {
+            //             this.plugin.reload();
+            //         });
+            //     component.extraSettingsEl.classList.add("mod-warning");
+            // })
             .then(cb => {
                 cb.settingEl.classList.add("setting-head");
             });
@@ -104,18 +104,18 @@ export class RunJSSettingTab extends PluginSettingTab {
                     .onChange(async (new_folder) => {
                         this.plugin.settings.scriptsFolder = new_folder;
                         this.plugin.saveSettings();
-                        if((await app.vault.adapter.stat(this.plugin.settings.scriptsFolder))?.type == "folder") {
+                        if ((await this.app.vault.adapter.stat(this.plugin.settings.scriptsFolder))?.type == "folder") {
                             cb.inputEl.removeClass("mod-warning");
                         } else {
                             cb.inputEl.addClass("mod-warning");
                         }
                     });
 
-                    if((await app.vault.adapter.stat(this.plugin.settings.scriptsFolder))?.type == "folder") {
-                        cb.inputEl.removeClass("mod-warning");
-                    } else {
-                        cb.inputEl.addClass("mod-warning");
-                    }
+                if ((await this.app.vault.adapter.stat(this.plugin.settings.scriptsFolder))?.type == "folder") {
+                    cb.inputEl.removeClass("mod-warning");
+                } else {
+                    cb.inputEl.addClass("mod-warning");
+                }
 
                 new FolderTextInputPopoverSuggest(this.app, cb.inputEl);
             });
@@ -126,7 +126,7 @@ export class RunJSSettingTab extends PluginSettingTab {
             .addExtraButton((component) => {
                 component
                     .setIcon("check-circle-2")
-                    .setTooltip("console")
+                    .setTooltip("Developer Tools - Console")
                     .onClick(() => {
                         this.plugin.settings.logConsole = !this.plugin.settings.logConsole;
                         this.plugin.saveSettings();
@@ -134,7 +134,8 @@ export class RunJSSettingTab extends PluginSettingTab {
                         else component.setIcon("circle");
                     })
                     .then(cb => {
-                        cb.extraSettingsEl.addClass("setting-log-check")
+                        cb.extraSettingsEl.addClass("setting-log-check");
+                        cb.extraSettingsEl.setAttr("data-label", "Console");
                         if (this.plugin.settings.logConsole) cb.setIcon("check-circle-2");
                         else cb.setIcon("circle");
                     });
@@ -142,7 +143,7 @@ export class RunJSSettingTab extends PluginSettingTab {
             .addExtraButton((component) => {
                 component
                     .setIcon("check-circle-2")
-                    .setTooltip("notice")
+                    .setTooltip("Obsidian - Notice")
                     .onClick(() => {
                         this.plugin.settings.logNotice = !this.plugin.settings.logNotice;
                         this.plugin.saveSettings();
@@ -150,7 +151,8 @@ export class RunJSSettingTab extends PluginSettingTab {
                         else component.setIcon("circle");
                     })
                     .then(cb => {
-                        cb.extraSettingsEl.addClass("setting-log-check")
+                        cb.extraSettingsEl.addClass("setting-log-check");
+                        cb.extraSettingsEl.setAttr("data-label", "Notice");
                         if (this.plugin.settings.logNotice) cb.setIcon("check-circle-2");
                         else cb.setIcon("circle");
                     });
@@ -158,7 +160,7 @@ export class RunJSSettingTab extends PluginSettingTab {
             .addExtraButton((component) => {
                 component
                     .setIcon("circle")
-                    .setTooltip("file")
+                    .setTooltip("Append to file")
                     .onClick(() => {
                         this.plugin.settings.logFile = !this.plugin.settings.logFile;
                         this.plugin.saveSettings();
@@ -166,7 +168,8 @@ export class RunJSSettingTab extends PluginSettingTab {
                         else component.setIcon("circle");
                     })
                     .then(cb => {
-                        cb.extraSettingsEl.addClass("setting-log-check")
+                        cb.extraSettingsEl.addClass("setting-log-check");
+                        cb.extraSettingsEl.setAttr("data-label", "File");
                         if (this.plugin.settings.logFile) cb.setIcon("check-circle-2");
                         else cb.setIcon("circle");
                     });
@@ -193,15 +196,13 @@ export class RunJSSettingTab extends PluginSettingTab {
                     .setIcon("plus")
                     .setTooltip("Add code")
                     .onClick(async (evt: MouseEvent) => {
-                        let app = this.app;
-
-                        let runJSCodeModal = new RunJSCodeModal(
-                            app,
+                        let runJSCodeListModal = new RunJSCodeListModal(
+                            this.app,
                             this.plugin,
                             this.plugin.codesScript,
                             this.addAutostartSetting.bind(this)
                         );
-                        runJSCodeModal.open();
+                        runJSCodeListModal.open();
                     })
             );
 
@@ -224,14 +225,13 @@ export class RunJSSettingTab extends PluginSettingTab {
                     .setIcon("plus")
                     .setTooltip("Add Command")
                     .onClick(async (evt: MouseEvent) => {
-                        const app = this.app;
-                        const runJSCodeModal = new RunJSCodeModal(
-                            app,
+                        const runJSCodeListModal = new RunJSCodeListModal(
+                            this.app,
                             this.plugin,
                             this.plugin.codesScript,
                             this.addCommandSetting.bind(this)
                         );
-                        runJSCodeModal.open();
+                        runJSCodeListModal.open();
                     })
             );
 
@@ -251,14 +251,13 @@ export class RunJSSettingTab extends PluginSettingTab {
                     .setIcon("plus")
                     .setTooltip("Add ribbon icon")
                     .onClick(async (evt: MouseEvent) => {
-                        const app = this.app;
-                        const runJSCodeModal = new RunJSCodeModal(
-                            app,
+                        const runJSCodeListModal = new RunJSCodeListModal(
+                            this.app,
                             this.plugin,
                             this.plugin.codesScript,
                             this.addRibbonIconSetting.bind(this)
                         );
-                        runJSCodeModal.open();
+                        runJSCodeListModal.open();
                     })
             );
 
@@ -291,20 +290,31 @@ export class RunJSSettingTab extends PluginSettingTab {
             cls: "setting-item-container interval-container",
         });
 
-        
-		new Setting(containerEl)
-        .setName('Donate')
-        .setDesc('If you like this plugin, consider donating to support continued development:')
-        .setClass("setting-donate")
-        // .addButton((bt) => {
-        //     bt.buttonEl.outerHTML = `<a href="https://www.buymeacoffee.com/eoureo" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 40px !important;width: 144px !important;" ></a>`;
-        // })
-        .addButton((bt) => {
-            bt.buttonEl.outerHTML = `<a href="https://www.buymeacoffee.com/eoureo" target="_blank"><img src="${BUY_ME_A_COFFEE_YELLOW}" data-src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 40px !important;width: 144px !important;" ></a>`;
-        })
-        .addButton((bt) => {
-            bt.buttonEl.outerHTML = `<a href="https://www.buymeacoffee.com/eoureo" target="_blank"><img src="${BUY_ME_A_COFFEE_QR_BOX}" alt="Buy Me A Coffee" style="height: 144px !important;width: 144px !important;" ></a>`;
-        });
+        new Setting(containerEl)
+            .setName('Donate')
+            .setDesc('If you like this plugin, consider donating to support continued development:')
+            .setClass("setting-donate")
+            .then(cb => {
+                cb.controlEl.createEl("a", { attr: { href: "https://www.buymeacoffee.com/eoureo", target: "_blank" } }, el => {
+                    el.createEl("img", {
+                        attr: {
+                            src: BUY_ME_A_COFFEE_YELLOW,
+                            "data-src": "https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png",
+                            alt: "Buy Me A Coffee",
+                            style: "height: 40px !important;width: 144px !important;"
+                        }
+                    });
+                });
+                cb.controlEl.createEl("a", { attr: { href: "https://www.buymeacoffee.com/eoureo", target: "_blank" } }, el => {
+                    el.createEl("img", {
+                        attr: {
+                            src: BUY_ME_A_COFFEE_QR_BOX,
+                            alt: "Buy Me A Coffee",
+                            style: "height: 144px !important;width: 144px !important;"
+                        }
+                    });
+                });
+            });
     }
 
     addAutostartSetting(code: Code) {
@@ -360,7 +370,7 @@ export class RunJSSettingTab extends PluginSettingTab {
     renderAutostartSetting(autostart: [string, boolean], settings: [string, boolean][]) {
         const codeName = autostart[0];
         let code = this.plugin.getCodeByName(codeName);
-        
+
         let checkError = false;
         if (code == null) {
             this.plugin.log("error", "renderAutostartSetting", codeName);
@@ -374,7 +384,7 @@ export class RunJSSettingTab extends PluginSettingTab {
             .setName(
                 createFragment((e) => {
                     const icon = e.createSpan({ text: "icon", cls: "icon" });
-                    if(code && Object.keys(LIST_ICON).contains(code.form)) setIcon(icon, LIST_ICON[code.form]);
+                    if (code && Object.keys(LIST_ICON).contains(code.form)) setIcon(icon, LIST_ICON[code.form]);
                     e.createSpan({ text: autostart[0] });
                 })
             )
@@ -453,7 +463,7 @@ export class RunJSSettingTab extends PluginSettingTab {
                         // @ts-ignore
                         title: code.form,
                     });
-                    if(code && Object.keys(LIST_ICON).contains(code.form)) setIcon(icon, LIST_ICON[code.form]);
+                    if (code && Object.keys(LIST_ICON).contains(code.form)) setIcon(icon, LIST_ICON[code.form]);
                     e.createSpan({ text: commandSetting.codeName, cls: "code-name" });
                 })
             )
@@ -566,7 +576,7 @@ export class RunJSSettingTab extends PluginSettingTab {
                         title: code.form,
                     });
                     // setIcon(icon, LIST_ICON[code.form]);
-                    if(code && Object.keys(LIST_ICON).contains(code.form)) setIcon(icon, LIST_ICON[code.form]);
+                    if (code && Object.keys(LIST_ICON).contains(code.form)) setIcon(icon, LIST_ICON[code.form]);
                     e.createSpan({
                         text: ribbonIconSetting.codeName,
                         cls: "code-name",
@@ -712,7 +722,7 @@ export class RunJSSettingTab extends PluginSettingTab {
                 settings.splice(index + 1, 0, settings.splice(index, 1)[0]);
             } else {
                 if (index <= 0) return;
-                
+
                 parentEl.insertBefore(settingEl, settingEl.previousElementSibling);
                 settings.splice(index - 1, 0, settings.splice(index, 1)[0]);
             }
@@ -737,11 +747,11 @@ export class RunJSSettingTab extends PluginSettingTab {
             // if (setting[this.key_sym]) delete settings[setting[this.key_sym]];
 
             const key = setting[(this.key_sym as unknown) as keyof Setting];
-            
+
             // @ts-ignore
             if (key) delete settings[key];
         }
-        
+
         settingEl.remove();
         this.plugin.saveSettings();
     }

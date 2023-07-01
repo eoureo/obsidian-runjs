@@ -12,7 +12,7 @@ import { LIST_ICON, RunJS_LISTVIEW_ICON } from "./constants";
 
 export const RunJSCodeListViewType = "runjs-codelist-view";
 
-export class RunJSListView extends ItemView {
+export class RunJSCodeListView extends ItemView {
     private readonly plugin: RunJSPlugin;
     table: HTMLTableElement;
     menuFilter: Menu;
@@ -52,7 +52,7 @@ export class RunJSListView extends ItemView {
     // }
 
     public onload() {
-        this.containerEl.classList.add("runjs-listview-container");
+        this.containerEl.classList.add("runjs-codelist-view-container");
 
         const navHeader = createDiv({ cls: "nav-header" });
         this.containerEl.insertBefore(navHeader, this.containerEl.firstChild);
@@ -103,7 +103,7 @@ export class RunJSListView extends ItemView {
         
         // @ts-ignore
         const menuFilterDom = this.menuFilter.dom;
-        menuFilterDom.classList.add("runjs-listview-menu");
+        menuFilterDom.classList.add("runjs-codelist-view-menu");
 
         const filters = this.plugin.settings.listviewFilters;
 
@@ -131,7 +131,7 @@ export class RunJSListView extends ItemView {
                         .setTitle(option)
                         .setIcon(LIST_ICON[option])
                         .onClick(() => {
-                            if (filters[group].contains(option)) {
+                            if (filters[group]?.contains(option)) {
                                 filters[group].remove(option);
                                 if (
                                     options.length > 1 &&
@@ -140,6 +140,7 @@ export class RunJSListView extends ItemView {
                                     filters[group] = options.slice();
                                 }
                             } else {
+                                if (!(group in filters)) filters[group] = [];
                                 filters[group].push(option);
                             }
 
@@ -187,11 +188,12 @@ export class RunJSListView extends ItemView {
             const option = "favorite";
             const ft_op = "ft-" + option;
 
-            if (filters[group].contains(option)) {
+            if (filters[group]?.contains(option)) {
                 filters[group].remove(option);
                 this.containerEl.classList.remove(ft_op);
                 menuFilterDom.classList.remove(ft_op);
             } else {
+                if (!(group in filters)) filters[group] = [];
                 filters[group].push(option);
                 this.containerEl.classList.add(ft_op);
                 menuFilterDom.classList.add(ft_op);
@@ -215,7 +217,7 @@ export class RunJSListView extends ItemView {
         this.menuOther = new Menu();
         let menuItemAutoRefresh: MenuItem;
         // @ts-ignore
-        this.menuOther.dom.classList.add("runjs-listview-menu");
+        this.menuOther.dom.classList.add("runjs-codelist-view-menu");
         this.menuOther.addItem((item) => {
             menuItemAutoRefresh = item;
             item
@@ -516,14 +518,14 @@ export class RunJSListView extends ItemView {
     openFileContextMenu(event: MouseEvent, code: Code, treeItem: HTMLDivElement) {
         const menu = new Menu();
         // @ts-ignore
-        menu.dom?.classList.add("runjs-listview-menu");
+        menu.dom?.classList.add("runjs-codelist-view-menu");
 
         if (code.type == "script") {
             menu.addItem((item) =>
                 item
                     .setTitle("Run code")
                     .setIcon("lucide-scroll")
-                    .setSection("runjs-listview")
+                    .setSection("runjs-codelist-view")
                     .onClick(() => {
                         this.plugin.runCode(code);
                     })
@@ -534,7 +536,7 @@ export class RunJSListView extends ItemView {
             item
                 .setTitle("Toggle Favorite code")
                 .setIcon(LIST_ICON["favorite"])
-                .setSection("runjs-listview")
+                .setSection("runjs-codelist-view")
                 .onClick(() => {
                     treeItem.classList.toggle("favorite");
                     this.plugin.toggleFavoriteCode(code);
@@ -557,7 +559,7 @@ export class RunJSListView extends ItemView {
             item
                 .setTitle("Open code file")
                 .setIcon("lucide-edit")
-                .setSection("runjs-listview")
+                .setSection("runjs-codelist-view")
                 .onClick(() => {
                     this.focusFile(
                         code,
@@ -606,7 +608,7 @@ export class RunJSListView extends ItemView {
         })
     }
 
-    private readonly focusFile = async (
+    focusFile = async (
         code: Code,
         shouldSplit = false
     ): Promise<void> => {
@@ -615,28 +617,26 @@ export class RunJSListView extends ItemView {
             .find((f) => f.path === code.file);
 
         if (targetFile) {
-            let leaf: WorkspaceLeaf = <WorkspaceLeaf>(
-                this.app.workspace.getMostRecentLeaf()
-            );
+            let leaf = this.app.workspace.getMostRecentLeaf();
 
-            const createLeaf = shouldSplit || leaf.getViewState().pinned;
-            if (createLeaf) {
-                if (this.plugin.settings.listviewOpenType == "split")
-                    leaf = this.app.workspace.getLeaf("split");
-                else if (this.plugin.settings.listviewOpenType == "window")
-                    leaf = this.app.workspace.getLeaf("window");
-                else leaf = this.app.workspace.getLeaf("tab");
+            if (leaf) {
+                const createLeaf = shouldSplit || leaf.getViewState().pinned;
+                if (createLeaf) {
+                    if (this.plugin.settings.listviewOpenType == "split")
+                        leaf = this.app.workspace.getLeaf("split");
+                    else if (this.plugin.settings.listviewOpenType == "window")
+                        leaf = this.app.workspace.getLeaf("window");
+                    else leaf = this.app.workspace.getLeaf("tab");
+                }
+                await leaf.openFile(targetFile);
+
+                if (code.form != "codeblock") return;
+
+                const viewState = leaf.getViewState();
+                viewState.state.mode = "source";
+                viewState.state.source = true;
+                await leaf.setViewState(viewState);
             }
-            await leaf.openFile(targetFile);
-
-            if (code.form != "codeblock") return;
-
-            const viewState = leaf.getViewState();
-            viewState.state.mode = "source";
-            viewState.state.source = true;
-            await leaf.setViewState(viewState);
-
-            sleep(50);
 
             // @ts-ignore
             const editor = this.app.workspace.getActiveViewOfType(MarkdownView)?.sourceMode.cmEditor;

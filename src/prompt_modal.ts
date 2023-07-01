@@ -1,4 +1,4 @@
-import { App, Modal, ButtonComponent, TextComponent } from "obsidian";
+import { App, Modal, ButtonComponent, TextComponent, TextAreaComponent } from "obsidian";
 
 type PromptCallback = (text: string | null) => void;
 
@@ -7,8 +7,9 @@ export class PromptModal extends Modal {
     message: string;
     messagDefault: string;
     placeholder: string;
+    multiLine: boolean;
     callback: PromptCallback;
-    textComponent: TextComponent;
+    textComponent: TextComponent | TextAreaComponent;
 
     constructor(
         app: App,
@@ -16,6 +17,7 @@ export class PromptModal extends Modal {
         message: string,
         messagDefault: string = "",
         placeholder: string = "",
+        multiLine: boolean = false,
         callback: PromptCallback
     ) {
         super(app);
@@ -23,6 +25,7 @@ export class PromptModal extends Modal {
         this.message = message;
         this.messagDefault = messagDefault;
         this.placeholder = placeholder;
+        this.multiLine = multiLine;
         this.callback = callback;
     }
 
@@ -35,13 +38,25 @@ export class PromptModal extends Modal {
 
         if (this.title) this.titleEl.setText(this.title);
 
-        contentEl.createEl("p").setText(this.message);
+        if (this.message) contentEl.createEl("p").setText(this.message);
 
-        this.textComponent = new TextComponent(contentEl)
+        if (this.multiLine) {
+            this.textComponent = new TextAreaComponent(contentEl);
+        } else {
+            this.textComponent = new TextComponent(contentEl);
+        }
+        
+        this.textComponent
             .setValue(this.messagDefault)
             .setPlaceholder(this.placeholder)
             .then((cb) => {
                 cb.inputEl.addClass("prompt-input");
+                cb.inputEl.addEventListener("keydown", (event: KeyboardEvent) =>  {
+                    if (!event.shiftKey && event.key === "Enter") {
+                        this.onOK();
+                        event.preventDefault(); // Prevents the addition of a new line in the text field
+                    }
+                });
             });
 
         const buttonDiv = contentEl.createDiv({
@@ -52,21 +67,23 @@ export class PromptModal extends Modal {
             .setButtonText("OK")
             .setCta()
             .onClick(() => {
-                this.callback(this.textComponent.getValue());
-                this.close();
+                this.onOK();
             })
             .setCta();
 
         new ButtonComponent(buttonDiv).setButtonText("Cancel").onClick(() => {
-            this.callback(null);
             this.close();
         });
     }
 
     onClose() {
-        this.callback(null);
         let { contentEl } = this;
         contentEl.empty();
+    }
+
+    onOK() {
+        this.callback(this.textComponent.getValue());
+        this.close();
     }
 }
 
@@ -76,26 +93,21 @@ export async function openPromptModal(
     message: string,
     messagDefault: string = "",
     placeholder: string = "",
+    multiLine: boolean = false,
     callback?: PromptCallback
 ) {
-    let return_value;
-
-    const promise = new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
         new PromptModal(
             app,
             title,
             message,
             messagDefault,
             placeholder,
+            multiLine,
             callback ??
                 ((text: string | null) => {
                     resolve(text);
                 })
         ).open();
     });
-
-    await promise.then((value) => {
-        return_value = value;
-    });
-    return return_value;
 }

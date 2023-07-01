@@ -1,7 +1,7 @@
 {
 	"name": "runjs",
-	"version": "0.3.0",
-	"description": "RunJS is a plugin for running JavaScript code in Obsidian (https://obsidian.md).",
+	"version": "0.4.0",
+	"description": "Run easily JavaScript codes for managing Obsidian and its notes.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
