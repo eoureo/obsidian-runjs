@@ -320,7 +320,7 @@ export class ObjectModal extends SuggestModal<string> {
 
     addInfos() {
         this.properties = Object.getOwnPropertyNames(this._object);
-        this.prototypes = Object.getOwnPropertyNames( Object.getPrototypeOf(this._object) );
+        this.prototypes = Object.getOwnPropertyNames( Object.getPrototypeOf(this._object) ?? {} );
         this.members = this.properties.concat(this.prototypes);
 
         for (let member of this.members) {
