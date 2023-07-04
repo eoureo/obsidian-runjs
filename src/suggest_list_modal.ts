@@ -56,7 +56,7 @@ export class SuggestListModal extends SuggestModal<string> {
     }
 }
 
-export async function openSuggestListModal(app: App, title: string, message: string, list: Array<string>, placeHolder: string, callback?: SuggestCallback) {
+export async function openSuggestListModal(app: App, title: string, message: string, list: Array<string>, placeHolder: string, callback?: SuggestCallback): Promise<string | null> {
     return await new Promise((resolve, reject) => {
         new SuggestListModal(
             app,

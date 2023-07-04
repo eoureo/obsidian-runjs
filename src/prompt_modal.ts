@@ -95,7 +95,7 @@ export async function openPromptModal(
     placeholder: string = "",
     multiLine: boolean = false,
     callback?: PromptCallback
-) {
+): Promise<string | null> {
     return await new Promise((resolve, reject) => {
         new PromptModal(
             app,

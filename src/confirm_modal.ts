@@ -48,7 +48,7 @@ export class ConfirmModal extends Modal {
     }
 }
 
-export async function openConfirmModal (app: App, title: string | null, message: string, callback?: ConfirmCallback) {
+export async function openConfirmModal (app: App, title: string | null, message: string, callback?: ConfirmCallback): Promise<boolean> {
     return await new Promise((resolve, reject) => {
         new ConfirmModal(
             app,

@@ -1209,19 +1209,19 @@ export default class RunJSPlugin extends Plugin {
         objectModal.open();
     }
 
-    async alert(message: string) {
+    async alert(message: string): Promise<void> {
         await openMessageModal(this.app, this.manifest.name, message);
     }
 
-    async confirm(message: string) {
+    async confirm(message: string): Promise<boolean> {
         return await openConfirmModal(this.app, this.manifest.name, message);
     }
 
-    async prompt(message: string, messagDefault: string = "", placeholder: string = "", multiLine: boolean = false) {
+    async prompt(message: string, messagDefault: string = "", placeholder: string = "", multiLine: boolean = false): Promise<string | null> {
         return await openPromptModal(this.app, this.manifest.name, message, messagDefault, placeholder, multiLine);
     }
 
-    async suggest(message: string, list: string[], placeholder: string = "") {
+    async suggest(message: string, list: string[], placeholder: string = ""): Promise<string | null> {
         return await openSuggestListModal(this.app, this.manifest.name, message, list, placeholder);
     }
 
