@@ -4,7 +4,8 @@
 
 RunJS is a plugin for running JavaScript code in [Obsidian](https://obsidian.md/). You can directly run trivial(?) code snippets without having to create a separate plugin. But, like any other plugin, you can run code that manages Obsidian and notes. Codes is written as codeblocks (.md) in Obsidian Notes or as separate files (.js, .mjs). You also have the option to break down your code into executable code and module to give you better organization.
 
-![Obsidian-RunJS FrontMatter test](images/Obsidian_RunJS_FrontMatter_test_1600.gif)<p ><small>This is a simple usage example. Click on a command([Toggle cssclass width-100](https://github.com/eoureo/obsidian-runjs/discussions/10)) in the Codelist View. Then add "width-100" value to cssclass in frontmatter. The style saved in CSS Snippets is applied, making note wider. Clicking on it again removes the "width-100" value and the width of the note returns to its original width. Run "Open code file" command and you can see the code. Then you can modify it.</small></p>
+![Obsidian-RunJS introduction](images/Obsidian_RunJS_introduction.gif)
+In this example, the [Insert Callout](https://github.com/eoureo/obsidian-runjs/discussions/17) and [width-100](https://github.com/eoureo/obsidian-runjs/discussions/10) commands are executing. You can view and modify the source code with the Open code file menu.
 
 
 ## Features
@@ -27,19 +28,16 @@ RunJS is a plugin for running JavaScript code in [Obsidian](https://obsidian.md/
 - **Coding**: When developing other plugins, the code can be used directly without modification.
 
 
-## How to get code
-
-Modify the code to suit your environment. Settings that usually need to be changed are at the top of the code.
-
-- **Codes of RunJS**: You can see some useful code in [Discussions - Codes of RunJS](https://github.com/eoureo/obsidian-runjs/discussions/categories/codes-of-runjs). I'll keep posting the codes here.
-- **Codes Share**: Please share and introduce your code to [Discussions - Codes Share](https://github.com/eoureo/obsidian-runjs/discussions/categories/codes-share).
-
-
-**⚠️ Caution**:  
-*Codes can do the same thing as other plugins. So bad code can potentially disrupt Obsidian or corrupt notes. It is important to ensure that the code is safe before executing it.*
-
-
 ## Start - Hello, World!
+
+JavaScript codeblock(js, javascript) must have the following directive format to be recognized as code in RunJS.
+
+- RunJS:"name"
+- RunJS:"group/name"
+- RunJS:{n:"name"}
+- RunJS:{n:"group/name",t:"s"}
+
+If your code is in a .js file (executable) or .mjs file (module), you can simply put it in the RunJS scripts folder without any directives.
 
 ````markdown
 ```js RunJS:"Test/Hello, World!"
@@ -57,6 +55,27 @@ You can see more at the link below.
 
 Hello, World! : Discussions - Codes  
 [https://github.com/eoureo/obsidian-runjs/discussions/2](https://github.com/eoureo/obsidian-runjs/discussions/2)
+
+
+## How to get code
+
+The code in the codeblock in the following link is just pasting the codeblock itself into a note file. If the code is in a .js file or .mjs file, you can put the file in the folder set as the RunJS script folder.
+
+Some of the code may need to be modified to suit your environment. Settings that need to be changed are usually at the top of the code.
+
+- **Codes of RunJS**: You can see some useful code in [Discussions - Codes of RunJS](https://github.com/eoureo/obsidian-runjs/discussions/categories/codes-of-runjs). I'll keep posting the codes here.
+  - [Open with - VSCode, Total Commander](https://github.com/eoureo/obsidian-runjs/discussions/8)
+  - [Mange Frontmatter](https://github.com/eoureo/obsidian-runjs/discussions/10): width-100, modified date
+  - [Use internal plugin - Daily notes](https://github.com/eoureo/obsidian-runjs/discussions/13): today, previous, next
+  - [Use plugin - Templater](https://github.com/eoureo/obsidian-runjs/discussions/19): tp, append_template_to_active_file
+  - [Edit note](https://github.com/eoureo/obsidian-runjs/discussions/12): Path to File url, JS Comment
+  - [Module - RunJS-Utils.mjs](https://github.com/eoureo/obsidian-runjs/discussions/9): getSelection(), setSelection(text)
+  - [Insert Callout (Module for inserting callouts in various ways and Codes)](https://github.com/eoureo/obsidian-runjs/discussions/17)
+- **Codes Share**: Please share and introduce your code to [Discussions - Codes Share](https://github.com/eoureo/obsidian-runjs/discussions/categories/codes-share).
+
+
+**⚠️ Caution**:  
+*Codes can do the same thing as other plugins. So bad code can potentially disrupt Obsidian or corrupt notes. It is important to ensure that the code is safe before executing it.*
 
 
 ## Useful starter codes
@@ -210,6 +229,20 @@ You can see the above codes running in the image below.
 Here is the RunJS settings dialog.
 
 ![Obsidian-RunJS setting](images/RunJS_settingtab.png)
+
+
+## API
+
+- openCodeListModal(groupRoot?: string)
+- openObjectModal(object?: { [key: string]: any }, callback?: (key: string) => void) [https://github.com/eoureo/obsidian-runjs/discussions/7](https://github.com/eoureo/obsidian-runjs/discussions/7)
+- openIconModal(callback?: (icon: string) => void) [https://github.com/eoureo/obsidian-runjs/discussions/3](https://github.com/eoureo/obsidian-runjs/discussions/3)
+- runCodeByName(name: string)
+- dialogs [https://github.com/eoureo/obsidian-runjs/discussions/20](https://github.com/eoureo/obsidian-runjs/discussions/20):
+  - alert(message: string)
+  - confirm(message: string)
+  - prompt(message: string, messagDefault: string = "", placeholder: string = "", multiLine: boolean = false)
+  - suggest(message: string, list: string[], placeholder: string = "")
+
 
 ## Donate
 
