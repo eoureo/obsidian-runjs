@@ -1,5 +1,6 @@
 import {
     App,
+    DropdownComponent,
     Notice,
     PluginSettingTab,
     Setting,
@@ -12,6 +13,7 @@ import RunJSPlugin, {
     CommandSetting,
     CommandsSetting,
     DEFAULT_CODE,
+    EventHandlerSetting,
     RibbonIconSetting,
 } from "./main";
 import {
@@ -23,19 +25,21 @@ import {
     BUY_ME_A_COFFEE_YELLOW,
     COMMAND_DEFAULT_ICON,
     COMMAND_PREFIX,
+    EventNames,
     LIST_ICON,
     RIBBON_ICON_DEFAULT_ICON,
 } from "./constants";
 import { RunJSCodeListModal } from "./codelist_modal";
 import { openConfirmDeleteModal } from "./confirm_modal";
 import { openMessageModal } from "./message_modal";
+import { eventNames } from "process";
 
 export class RunJSSettingTab extends PluginSettingTab {
     plugin: RunJSPlugin;
     autostartContainerEl: HTMLDivElement;
     commandsContainerEl: HTMLDivElement;
     ribbonIconsContainerEl: HTMLDivElement;
-    eventsContainerEl: HTMLDivElement;
+    eventHandlersContainerEl: HTMLDivElement;
     intervalContainerEl: HTMLDivElement;
     settings_sym: symbol;
     key_sym: symbol;
@@ -273,14 +277,35 @@ export class RunJSSettingTab extends PluginSettingTab {
         }
 
         new Setting(containerEl)
-            .setName("Event handle - ToDo")
+            .setName("Event handler")
             .setDesc(
                 "This adds a code for each event(click, active-leaf-change, file-open, editor-change ......)."
+            )
+            .addButton((component) =>
+                component
+                    .setIcon("plus")
+                    .setTooltip("Add event handler")
+                    .onClick(async (evt: MouseEvent) => {
+                        const runJSCodeListModal = new RunJSCodeListModal(
+                            this.app,
+                            this.plugin,
+                            this.plugin.codesScript,
+                            this.addEventHandlerSetting.bind(this)
+                        );
+                        runJSCodeListModal.open();
+                    })
             );
 
-        this.eventsContainerEl = containerEl.createDiv({
-            cls: "setting-item-container events-container",
+        this.eventHandlersContainerEl = containerEl.createDiv({
+            cls: "setting-item-container event-handlers-container",
         });
+
+        for (let eventHandlerSetting of this.plugin.settings.eventHandlers) {
+            this.renderEventHandlerSetting(
+                eventHandlerSetting,
+                this.plugin.settings.eventHandlers
+            );
+        }
 
         new Setting(containerEl)
             .setName("Interval - ToDo")
@@ -364,6 +389,24 @@ export class RunJSSettingTab extends PluginSettingTab {
         this.renderRibbonIconSetting(
             setting_new,
             this.plugin.settings.ribbonIcons
+        );
+    }
+
+    addEventHandlerSetting(code: Code) {
+        const setting_new = {
+            name: code.name,
+            event: "workspace:",
+            codeName: code.name,
+            enable: false,
+            icon: RIBBON_ICON_DEFAULT_ICON,
+        };
+
+        this.plugin.settings.eventHandlers.push(setting_new);
+
+        this.plugin.saveSettings();
+        this.renderEventHandlerSetting(
+            setting_new,
+            this.plugin.settings.eventHandlers
         );
     }
 
@@ -694,6 +737,236 @@ export class RunJSSettingTab extends PluginSettingTab {
                     value: settings,
                     writable: false
                 });
+            });
+        if (checkError) {
+            setting.nameEl.classList.add("mod-warning");
+            setting.nameEl.setAttribute("title", "error");
+        }
+
+        return setting;
+    }
+
+    renderEventHandlerSetting(
+        eventHandlerSetting: EventHandlerSetting,
+        settings: EventHandlerSetting[]
+    ) {
+        let code = this.plugin.getCodeByName(eventHandlerSetting.codeName);
+        let checkError = false;
+        if (code == null) {
+            this.plugin.log(
+                "error",
+                "renderEventHandlerSetting",
+                eventHandlerSetting
+            );
+            code = Object.assign({}, DEFAULT_CODE, {
+                name: "error",
+                form: "error",
+            });
+            checkError = true;
+        }
+        let textComp: TextComponent;
+        let toggleComp: ToggleComponent;
+        let dropdownEventObjComp : DropdownComponent;
+        let dropdownEventNameComp : DropdownComponent;
+        const setting = new Setting(this.eventHandlersContainerEl)
+            .setName(
+                createFragment((e) => {
+                    const icon = e.createSpan({
+                        text: "icon",
+                        cls: "icon file-icon",
+                        // @ts-ignore
+                        title: code.form,
+                    });
+                    // setIcon(icon, LIST_ICON[code.form]);
+                    if (code && Object.keys(LIST_ICON).contains(code.form)) setIcon(icon, LIST_ICON[code.form]);
+                    e.createSpan({
+                        text: eventHandlerSetting.codeName,
+                        cls: "code-name",
+                        title: "Change code"
+                    }, (el) => {
+                        el.onclick = (ev) => {
+                            const runJSCodeListModal = new RunJSCodeListModal(
+                                this.app,
+                                this.plugin,
+                                this.plugin.codesScript,
+                                (code_new) => {
+                                    el.setText(code_new.name);
+                                    setIcon(icon, LIST_ICON[code_new.form])
+                                    eventHandlerSetting.codeName = code_new.name;
+                                    this.plugin.saveSettings();
+                                    if (code) Object.assign(code, code_new);
+                                    setting.nameEl.classList.remove("mod-warning");
+                                    setting.nameEl.setAttribute("title", "");
+                                }
+                            );
+                            runJSCodeListModal.open();
+                        };
+                    });
+                })
+            )
+            .addExtraButton((component) =>
+                component
+                    .setIcon(eventHandlerSetting.icon)
+                    .setTooltip("Change icon")
+                    .onClick(() => {
+                        this.plugin.openIconModal((icon: string) => {
+                            component.setIcon(icon);
+                            eventHandlerSetting.icon = icon;
+                            this.plugin.saveSettings();
+                        });
+                    })
+            )
+            .addDropdown(cb => {
+                dropdownEventObjComp = cb;
+                // cb.addOption("", "");
+                for (let eventObj in EventNames) {
+                    cb.addOption(eventObj, eventObj);
+                }
+                cb.setValue(eventHandlerSetting.event.split(":")[0].trim());
+                cb.selectEl.setAttribute("title", "Event object");
+                cb.onChange((value) => {
+                    toggleComp.setValue(false);
+                    toggleComp.setDisabled(true);
+                    for(let option_i = dropdownEventNameComp.selectEl.options.length - 1; option_i > 0 ; option_i--) {
+                        dropdownEventNameComp.selectEl.remove(option_i);
+                    }
+                    // dropdownEventNameComp.addOption("", "");
+                    if (dropdownEventNameComp && value in EventNames) {
+                        for (let eventName of EventNames[value]) {
+                            dropdownEventNameComp.addOption(eventName, eventName);
+                        }
+                    }
+                    
+                    eventHandlerSetting.event = value + ":" + (dropdownEventNameComp ? dropdownEventNameComp.getValue(): "");
+                    this.plugin.saveSettings();
+                });
+            })
+            .addDropdown(cb => {
+                dropdownEventNameComp = cb;
+                cb.addOption("", "");
+                const eventObj = dropdownEventObjComp.getValue();
+                if (eventObj in EventNames) {
+                    for (let eventName of EventNames[eventObj]) {
+                        cb.addOption(eventName, eventName);
+                    }
+                }
+                cb.setValue(eventHandlerSetting.event.split(":")[1] ?? "");
+                cb.selectEl.setAttribute("title", "Event name");
+                cb.onChange((value) => {
+                    toggleComp.setValue(false);
+                    if (value.trim() == "") {
+                        toggleComp.setDisabled(true);
+                    } else {
+                        toggleComp.setDisabled(false);
+                    }
+                    eventHandlerSetting.event = dropdownEventObjComp.getValue() + ":" + value;
+                    this.plugin.saveSettings();
+                });
+            })
+            .addText((cb) => {
+                textComp = cb
+                    .setPlaceholder("input name")
+                    .setValue(eventHandlerSetting.name)
+                    .onChange((value) => {
+                        toggleComp.setValue(false);
+                        if (value.trim() == "") {
+                            toggleComp.setDisabled(true);
+                        } else {
+                            toggleComp.setDisabled(false);
+                        }
+                        eventHandlerSetting.name = value;
+                        this.plugin.saveSettings();
+                    })
+                    .then(component => {
+                        component.inputEl.setAttribute("title", "Display name");
+                    });
+            })
+            .addExtraButton((component) =>
+                component
+                    .setIcon("arrow-up-circle")
+                    .setTooltip("move up")
+                    .onClick(() => {
+                        this.moveSetting(setting, false);
+                    })
+            )
+            // .addExtraButton(component => component
+            //     .setIcon("arrow-down-circle")
+            //     .setTooltip('move down')
+            //     .onClick(() => {
+            //           this.moveSetting(setting, true);
+            //     })
+            // )
+            .addExtraButton((component) =>
+                component
+                    .setIcon("x-circle")
+                    .setTooltip("delete")
+                    .onClick(() => {
+                        openConfirmDeleteModal(
+                            this.app,
+                            "Delete handle item",
+                            `Are you sure you want to delete handle "${eventHandlerSetting.name}"?`,
+                            (confirmed: boolean) => {
+                                if (confirmed) {
+                                    if (eventHandlerSetting.enable) this.plugin.removeEventHandler(eventHandlerSetting);
+                                    this.deleteSetting(setting);
+                                }
+                            }
+                        );
+                    })
+            )
+            .addToggle((toggle) => {
+                toggleComp = toggle
+                    .setValue(eventHandlerSetting.enable)
+                    .setTooltip("Enable/Diable")
+                    .onChange((value) => {
+                        if (value && textComp.getValue().trim() == "") {
+                            // this.alert("input Event handle name!");
+                            toggle.setValue(false);
+                            this.plugin.log("warn", "input Event handle name!");
+                            textComp.inputEl.focus();
+                            return;
+                        }
+
+                        if (value) {
+                            for (let s of settings) {
+                                if (
+                                    s.enable &&
+                                    s != eventHandlerSetting &&
+                                    s.event === eventHandlerSetting.event &&
+                                    s.name === eventHandlerSetting.name
+                                ) {
+                                    toggle.setValue(false);
+                                    this.plugin.log(
+                                        "warn",
+                                        "There is a same name of Event handle."
+                                    );
+                                    textComp.inputEl.focus();
+                                    return;
+                                }
+                            }
+                            this.plugin.addEventHandler(eventHandlerSetting);
+                        } else {
+                            if (eventHandlerSetting.enable)
+                                this.plugin.removeEventHandler(eventHandlerSetting);
+                        }
+
+                        if (eventHandlerSetting.enable != value) {
+                            eventHandlerSetting.enable = value;
+                            this.plugin.saveSettings();
+                        }
+                    });
+                if (textComp.getValue().trim() == "") {
+                    toggleComp.setValue(false);
+                    toggle.setDisabled(true);
+                }
+            })
+            .then((st: Setting) => {
+                Object.defineProperty(st, this.settings_sym, {
+                    value: settings,
+                    writable: false
+                });
+
+                if (dropdownEventObjComp.getValue() === "" || dropdownEventNameComp.getValue() === "") toggleComp.setDisabled(true);
             });
         if (checkError) {
             setting.nameEl.classList.add("mod-warning");

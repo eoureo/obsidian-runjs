@@ -208,9 +208,22 @@ body:not(.is-grabbing)
 }
 
 .runjs-settingtab .setting-donate > *,
-.runjs-settingtab .setting-donate > .setting-item-control > a
- {
+.runjs-settingtab .setting-donate > .setting-item-control > a {
     margin-bottom: auto;
+}
+
+.runjs-settingtab .event-handlers-container .setting-item,
+.runjs-settingtab .event-handlers-container .setting-item .setting-item-control {
+    display: block;
+}
+
+.runjs-settingtab .event-handlers-container .setting-item .setting-item-name .code-name {
+    cursor: pointer;
+}
+
+.runjs-settingtab .event-handlers-container .setting-item .setting-item-control > * {
+    display: inline-block;
+    margin-left: var(--size-4-2);
 }
 
 .runjs-icon-modal .prompt-results {
