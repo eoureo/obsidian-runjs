@@ -22,7 +22,7 @@ export class MessageModal extends Modal {
 
         if (this.title) this.titleEl.setText(this.title);
 
-        contentEl.setText(this.message);
+        contentEl.createEl("p").setText(this.message);
 
         const buttonDiv = contentEl.createDiv({ cls: "modal-button-container" });
 

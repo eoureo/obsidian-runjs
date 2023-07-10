@@ -303,6 +303,12 @@ body:not(.is-grabbing)
     -webkit-user-select: text;
 }
 
+.runjs-message-modal .modal-content p,
+.runjs-confirm-modal .modal-content p,
+.runjs-prompt-modal .modal-content p {
+    white-space: pre-wrap;
+}
+
 .runjs-prompt-modal textarea.prompt-input {
     width: 100%;
     /* padding: var(--size-4-6); */
