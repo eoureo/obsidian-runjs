@@ -52,9 +52,8 @@ export interface RibbonIconSetting {
 }
 
 export interface EventHandlerSetting {
-    name: string;
-    event: string;
-    icon: string;
+    eventName: string;
+    eventObject: string;
     codeName: string;
     enable: boolean;
 }
@@ -1158,13 +1157,13 @@ export default class RunJSPlugin extends Plugin {
             this.runCodeByName(setting.codeName, ...args);
         };
         
-        const split = setting.event.split(":");
-        const obj = this.app[(split[0] as unknown) as keyof App];
+        // const split = setting.eventObject;
+        const obj = this.app[(setting.eventObject as unknown) as keyof App];
         if (obj && "on" in obj && typeof obj.on === "function") {
             // @ts-ignore
-            const eventRef = obj.on(split[1], callbackFunc.bind(this));
+            const eventRef = obj.on(setting.eventName, callbackFunc.bind(this));
             this.registerEvent(eventRef);
-            const eventId = setting.event + ":" + setting.name;
+            const eventId = [setting.eventObject, setting.eventName, setting.codeName].join(":");
             this.registeredEvents[eventId] = eventRef;
             new Notice("Event on: " + eventId);
         }
@@ -1196,9 +1195,9 @@ export default class RunJSPlugin extends Plugin {
     removeEventHandler(setting: EventHandlerSetting) {
         if (setting == null) return;
         
-        const eventId = setting.event + ":" + setting.name;
-        const split = setting.event.split(":");
-        const obj = this.app[(split[0] as unknown) as keyof App];
+        const eventId = [setting.eventObject, setting.eventName, setting.codeName].join(":");
+        // const split = setting.eventObject.split(":");
+        const obj = this.app[(setting.eventObject as unknown) as keyof App];
         if (obj && "offref" in obj && typeof obj.offref === "function") obj.offref(this.registeredEvents[eventId]);
         delete this.registeredEvents[eventId];
         new Notice("Event off: " + eventId);

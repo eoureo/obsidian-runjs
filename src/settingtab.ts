@@ -394,11 +394,10 @@ export class RunJSSettingTab extends PluginSettingTab {
 
     addEventHandlerSetting(code: Code) {
         const setting_new = {
-            name: code.name,
-            event: "workspace:",
+            eventName: "",
+            eventObject: "workspace",
             codeName: code.name,
             enable: false,
-            icon: RIBBON_ICON_DEFAULT_ICON,
         };
 
         this.plugin.settings.eventHandlers.push(setting_new);
@@ -764,7 +763,6 @@ export class RunJSSettingTab extends PluginSettingTab {
             });
             checkError = true;
         }
-        let textComp: TextComponent;
         let toggleComp: ToggleComponent;
         let dropdownEventObjComp : DropdownComponent;
         let dropdownEventNameComp : DropdownComponent;
@@ -804,25 +802,13 @@ export class RunJSSettingTab extends PluginSettingTab {
                     });
                 })
             )
-            .addExtraButton((component) =>
-                component
-                    .setIcon(eventHandlerSetting.icon)
-                    .setTooltip("Change icon")
-                    .onClick(() => {
-                        this.plugin.openIconModal((icon: string) => {
-                            component.setIcon(icon);
-                            eventHandlerSetting.icon = icon;
-                            this.plugin.saveSettings();
-                        });
-                    })
-            )
             .addDropdown(cb => {
                 dropdownEventObjComp = cb;
                 // cb.addOption("", "");
                 for (let eventObj in EventNames) {
                     cb.addOption(eventObj, eventObj);
                 }
-                cb.setValue(eventHandlerSetting.event.split(":")[0].trim());
+                cb.setValue(eventHandlerSetting.eventObject);
                 cb.selectEl.setAttribute("title", "Event object");
                 cb.onChange((value) => {
                     toggleComp.setValue(false);
@@ -837,7 +823,7 @@ export class RunJSSettingTab extends PluginSettingTab {
                         }
                     }
                     
-                    eventHandlerSetting.event = value + ":" + (dropdownEventNameComp ? dropdownEventNameComp.getValue(): "");
+                    eventHandlerSetting.eventObject = value;
                     this.plugin.saveSettings();
                 });
             })
@@ -850,7 +836,7 @@ export class RunJSSettingTab extends PluginSettingTab {
                         cb.addOption(eventName, eventName);
                     }
                 }
-                cb.setValue(eventHandlerSetting.event.split(":")[1] ?? "");
+                cb.setValue(eventHandlerSetting.eventName);
                 cb.selectEl.setAttribute("title", "Event name");
                 cb.onChange((value) => {
                     toggleComp.setValue(false);
@@ -859,27 +845,9 @@ export class RunJSSettingTab extends PluginSettingTab {
                     } else {
                         toggleComp.setDisabled(false);
                     }
-                    eventHandlerSetting.event = dropdownEventObjComp.getValue() + ":" + value;
+                    eventHandlerSetting.eventName = value;
                     this.plugin.saveSettings();
                 });
-            })
-            .addText((cb) => {
-                textComp = cb
-                    .setPlaceholder("input name")
-                    .setValue(eventHandlerSetting.name)
-                    .onChange((value) => {
-                        toggleComp.setValue(false);
-                        if (value.trim() == "") {
-                            toggleComp.setDisabled(true);
-                        } else {
-                            toggleComp.setDisabled(false);
-                        }
-                        eventHandlerSetting.name = value;
-                        this.plugin.saveSettings();
-                    })
-                    .then(component => {
-                        component.inputEl.setAttribute("title", "Display name");
-                    });
             })
             .addExtraButton((component) =>
                 component
@@ -903,8 +871,11 @@ export class RunJSSettingTab extends PluginSettingTab {
                     .onClick(() => {
                         openConfirmDeleteModal(
                             this.app,
-                            "Delete handle item",
-                            `Are you sure you want to delete handle "${eventHandlerSetting.name}"?`,
+                            "Delete handler",
+                            `Are you sure you want to delete handler?` +
+                            `\n\ncode name: ${eventHandlerSetting.codeName}` +
+                            `\nEvent object: ${eventHandlerSetting.eventObject}` +
+                            `\nEvent name: ${eventHandlerSetting.eventName}`,
                             (confirmed: boolean) => {
                                 if (confirmed) {
                                     if (eventHandlerSetting.enable) this.plugin.removeEventHandler(eventHandlerSetting);
@@ -919,28 +890,20 @@ export class RunJSSettingTab extends PluginSettingTab {
                     .setValue(eventHandlerSetting.enable)
                     .setTooltip("Enable/Diable")
                     .onChange((value) => {
-                        if (value && textComp.getValue().trim() == "") {
-                            // this.alert("input Event handle name!");
-                            toggle.setValue(false);
-                            this.plugin.log("warn", "input Event handle name!");
-                            textComp.inputEl.focus();
-                            return;
-                        }
-
                         if (value) {
                             for (let s of settings) {
                                 if (
                                     s.enable &&
                                     s != eventHandlerSetting &&
-                                    s.event === eventHandlerSetting.event &&
-                                    s.name === eventHandlerSetting.name
+                                    s.eventObject === eventHandlerSetting.eventObject &&
+                                    s.eventName === eventHandlerSetting.eventName &&
+                                    s.codeName === eventHandlerSetting.codeName
                                 ) {
                                     toggle.setValue(false);
                                     this.plugin.log(
                                         "warn",
-                                        "There is a same name of Event handle."
+                                        "There is a same handler in Event handlers setting."
                                     );
-                                    textComp.inputEl.focus();
                                     return;
                                 }
                             }
@@ -955,10 +918,6 @@ export class RunJSSettingTab extends PluginSettingTab {
                             this.plugin.saveSettings();
                         }
                     });
-                if (textComp.getValue().trim() == "") {
-                    toggleComp.setValue(false);
-                    toggle.setDisabled(true);
-                }
             })
             .then((st: Setting) => {
                 Object.defineProperty(st, this.settings_sym, {
