@@ -1,3 +1,40 @@
+export const EventNames: {[key: string]: string[]} = {
+    "workspace": [
+        "quick-preview",
+        "resize",
+        "active-leaf-change",
+        "file-open",
+        "layout-change",
+        "window-open",
+        "window-close",
+        "css-change",
+        "file-menu",
+        "editor-menu",
+        "editor-change",
+        "editor-paste",
+        "editor-drop",
+        "codemirror",
+        "quit"
+    ],
+    // "workspaceLeaf": [
+    //     "pinned-change",
+    //     "group-change"
+    // ],
+    "vault": [
+        "create",
+        "modify",
+        "delete",
+        "rename",
+        "closed"
+    ],
+    "metadataCache": [
+        "changed",
+        "deleted",
+        "resolve",
+        "resolved"
+    ]
+};
+
 export const COMMAND_PREFIX = "command-";
 
 export const COMMAND_DEFAULT_ICON = "scroll";

@@ -9,6 +9,9 @@ import {
     TAbstractFile,
     EventRef,
     WorkspaceLeaf,
+    Workspace,
+    Vault,
+    MetadataCache,
 } from "obsidian";
 import * as obsidian from "obsidian";
 import * as Module from "module";
@@ -48,11 +51,19 @@ export interface RibbonIconSetting {
     enable: boolean;
 }
 
+export interface EventHandlerSetting {
+    eventName: string;
+    eventObject: string;
+    codeName: string;
+    enable: boolean;
+}
+
 interface RunJSPluginSettings {
     autoRefresh: boolean;
     autostarts: [string, boolean][];
     commands: CommandsSetting;
     ribbonIcons: RibbonIconSetting[];
+    eventHandlers: EventHandlerSetting[];
     scriptsFolder: string;
     logFilePath: string;
     logConsole: boolean;
@@ -71,6 +82,7 @@ export const DEFAULT_SETTINGS: RunJSPluginSettings = {
     autostarts: [],
     commands: {},
     ribbonIcons: [],
+    eventHandlers: [],
     scriptsFolder: "Scripts_RunJS",
     logFilePath: "",
     logConsole: true,
@@ -129,6 +141,10 @@ interface RefreshJobs {
     [file_path: string]: RefreshJob;
 }
 
+interface RegisteredEvents {
+    [key: string]: EventRef;
+}
+
 export default class RunJSPlugin extends Plugin {
     settings: RunJSPluginSettings;
     codes: Code[];
@@ -142,6 +158,7 @@ export default class RunJSPlugin extends Plugin {
     refreshId: number;
     refreshJobs: RefreshJobs;
     refreshLimitTime: number;
+    registeredEvents: RegisteredEvents;
 
     regexpCodeblockIndicator: RegExp = /^`{3,}(?:javascript|js) RunJS:(.*)/;
     eventRenameFile: EventRef;
@@ -163,6 +180,7 @@ export default class RunJSPlugin extends Plugin {
         this.refreshJobs = {};
         this.refreshLimitTime = 3000;
         this.refreshId = Date.now();
+        this.registeredEvents = {};
 
         let oldSymbols = Object.getOwnPropertySymbols(window).filter(elem => elem.toString() == this.runJSSymbol.toString());
         for (let oldSymbol of oldSymbols) {
@@ -257,6 +275,12 @@ export default class RunJSPlugin extends Plugin {
             for (let ribbon_icon of this.settings.ribbonIcons) {
                 if (ribbon_icon.enable) {
                     this.runAddRibbonIcon(ribbon_icon);
+                }
+            }
+
+            for (let eventHandler of this.settings.eventHandlers) {
+                if (eventHandler.enable) {
+                    this.addEventHandler(eventHandler);
                 }
             }
 
@@ -549,18 +573,18 @@ export default class RunJSPlugin extends Plugin {
         return leaf;
     }
 
-    runCodeByName(name: string) {
+    runCodeByName(name: string, ...args: any[]) {
         const code = this.getCodeByName(name);
 
         if (code == null) {
-            this.log("error", "runCodeByName", "code is null");
+            this.log("error", "runCodeByName", "code is null (" + name + ")");
             return;
         }
 
-        this.runCode(code);
+        this.runCode(code, ...args);
     }
 
-    async runCode(code: Code | null) {
+    async runCode(code: Code | null, ...args: any[]) {
         let text: string = "";
         let folder: string = "";
 
@@ -590,7 +614,7 @@ export default class RunJSPlugin extends Plugin {
 
         const m_text = this.modifyImport(text, folder);
         const F = new AsyncFunction(m_text);
-        await F.apply(this);
+        await F.apply(this, args);
     }
 
     async refresh() {
@@ -1126,6 +1150,25 @@ export default class RunJSPlugin extends Plugin {
         }
     }
 
+    addEventHandler(setting: EventHandlerSetting) {
+        if (setting == null) return;
+
+        const callbackFunc = (...args: any[]) => {
+            this.runCodeByName(setting.codeName, ...args);
+        };
+        
+        // const split = setting.eventObject;
+        const obj = this.app[(setting.eventObject as unknown) as keyof App];
+        if (obj && "on" in obj && typeof obj.on === "function") {
+            // @ts-ignore
+            const eventRef = obj.on(setting.eventName, callbackFunc.bind(this));
+            this.registerEvent(eventRef);
+            const eventId = [setting.eventObject, setting.eventName, setting.codeName].join(":");
+            this.registeredEvents[eventId] = eventRef;
+            new Notice("Event on: " + eventId);
+        }
+    }
+
     removeCommand(id: string) {
         // @ts-ignore
         this.app.commands.removeCommand(this.manifest.id + ":" + id);
@@ -1147,6 +1190,17 @@ export default class RunJSPlugin extends Plugin {
             // @ts-ignore
             this.app.workspace.leftRibbon?.removeRibbonAction(ribbonItem.title);
         }
+    }
+
+    removeEventHandler(setting: EventHandlerSetting) {
+        if (setting == null) return;
+        
+        const eventId = [setting.eventObject, setting.eventName, setting.codeName].join(":");
+        // const split = setting.eventObject.split(":");
+        const obj = this.app[(setting.eventObject as unknown) as keyof App];
+        if (obj && "offref" in obj && typeof obj.offref === "function") obj.offref(this.registeredEvents[eventId]);
+        delete this.registeredEvents[eventId];
+        new Notice("Event off: " + eventId);
     }
 
     async openIconModal(callback?: (icon: string) => void) {
