@@ -49,7 +49,7 @@ new Notice("Hello, World!");
 ```
 ````
 
-![Obsidian-RunJS Hello, World!](images/Obsidian_hello_800.gif)
+![Obsidian-RunJS Hello, World!](images/Obsidian_RunJS_hello_800.gif)
 
 You can see more at the link below.
 
@@ -71,6 +71,7 @@ Some of the code may need to be modified to suit your environment. Settings that
   - [Edit note](https://github.com/eoureo/obsidian-runjs/discussions/12): Path to File url, JS Comment
   - [Module - RunJS-Utils.mjs](https://github.com/eoureo/obsidian-runjs/discussions/9): getSelection(), setSelection(text)
   - [Insert Callout (Module for inserting callouts in various ways and Codes)](https://github.com/eoureo/obsidian-runjs/discussions/17)
+  - [Event handler - file-menu, editor-menu](https://github.com/eoureo/obsidian-runjs/discussions/24)
 - **Codes Share**: Please share and introduce your code to [Discussions - Codes Share](https://github.com/eoureo/obsidian-runjs/discussions/categories/codes-share).
 
 
@@ -121,7 +122,7 @@ runJS.openIconModal();
 ```
 ````
 
-![Obsidian-RunJS Icon modal](images/Obsidian_icon_modal.gif)
+![Obsidian-RunJS Icon modal](images/Obsidian_RunJS_icon_modal.gif)
 
 You can see more at the link below.
 
@@ -221,14 +222,14 @@ export function myFunc3(...args) {
 
 You can see the above codes running in the image below.
 
-![Obsidian-RunJS test](images/Obsidian_test_1600.gif)
+![Obsidian-RunJS test](images/Obsidian_RunJS_test_1600.gif)
 
 
 ## Settingtab
 
 Here is the RunJS settings dialog.
 
-![Obsidian-RunJS setting](images/RunJS_settingtab.png)
+![Obsidian-RunJS setting](images/Obsidian_RunJS_settingtab.png)
 
 
 ## API
@@ -249,4 +250,4 @@ Here is the RunJS settings dialog.
 If you like this plugin, consider donating to support continued development.
 
 <a href="https://www.buymeacoffee.com/eoureo" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>  
-<a href="https://www.buymeacoffee.com/eoureo" target="_blank"><img src="images/bmc_qr_box.png" alt="Buy Me A Coffee" style="width: 217px !important;" ></a>  
+<a href="https://www.buymeacoffee.com/eoureo" target="_blank"><img src="images/bmc_qr_box_eoureo.png" alt="Buy Me A Coffee" style="width: 217px !important;" ></a>  

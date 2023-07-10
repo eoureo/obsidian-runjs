@@ -49,7 +49,7 @@ new Notice("Hello, World!");
 ```
 ````
 
-![Obsidian-RunJS Hello, World!](images/Obsidian_hello_800.gif)
+![Obsidian-RunJS Hello, World!](images/Obsidian_RunJS_hello_800.gif)
 
 아래 링크에서 더 볼 수 있습니다.
 
@@ -71,6 +71,7 @@ Hello, World! : Discussions - Codes
   - [Edit note](https://github.com/eoureo/obsidian-runjs/discussions/12): Path to File url, JS Comment
   - [Module - RunJS-Utils.mjs](https://github.com/eoureo/obsidian-runjs/discussions/9): getSelection(), setSelection(text)
   - [Insert Callout (Module for inserting callouts in various ways and Codes)](https://github.com/eoureo/obsidian-runjs/discussions/17)
+  - [Event handler - file-menu, editor-menu](https://github.com/eoureo/obsidian-runjs/discussions/24)
 - **Codes Share**: [Discussions - Codes Share](https://github.com/eoureo/obsidian-runjs/discussions/categories/codes-share)에  당신이 만든 코드를 공유하고 소개하여 주세요.
 
 
@@ -121,7 +122,7 @@ runJS.openIconModal();
 ```
 ````
 
-![Obsidian-RunJS Icon modal](images/Obsidian_icon_modal.gif)
+![Obsidian-RunJS Icon modal](images/Obsidian_RunJS_icon_modal.gif)
 
 아래 링크에서 더 보실 수 있습니다.
 
@@ -221,14 +222,14 @@ export function myFunc3(...args) {
 
 아래 이미지는 위의 코드들을 실행하는 모습을 보여 줍니다.
 
-![Obsidian-RunJS test](images/Obsidian_test_1600.gif)
+![Obsidian-RunJS test](images/Obsidian_RunJS_test_1600.gif)
 
 
 ## RunJS 설정
 
 다음은 RunJS 설정 대화상자입니다.
 
-![Obsidian-RunJS setting](images/RunJS_settingtab.png)
+![Obsidian-RunJS setting](images/Obsidian_RunJS_settingtab.png)
 
 
 ## API
@@ -249,4 +250,4 @@ export function myFunc3(...args) {
 이 플러그인이 마음에 들면 지속적인 개발을 지원하기 위해 기부 부탁 드립니다.
 
 <a href="https://www.buymeacoffee.com/eoureo" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>  
-<a href="https://www.buymeacoffee.com/eoureo" target="_blank"><img src="images/bmc_qr_box.png" alt="Buy Me A Coffee" style="width: 217px !important;" ></a>  
+<a href="https://www.buymeacoffee.com/eoureo" target="_blank"><img src="images/bmc_qr_box_eoureo.png" alt="Buy Me A Coffee" style="width: 217px !important;" ></a>  
