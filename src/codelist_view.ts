@@ -17,7 +17,6 @@ export class RunJSCodeListView extends ItemView {
     table: HTMLTableElement;
     menuFilter: Menu;
     menuOther: Menu;
-    code_sym: symbol;
     groups: {[name: string]: HTMLElement};
     treeItems: HTMLElement[];
 
@@ -27,7 +26,6 @@ export class RunJSCodeListView extends ItemView {
         this.plugin = plugin;
         this.groups = {};
         this.treeItems = [];
-        this.code_sym = Symbol("code");
 
         this.plugin.listview = this;
         
@@ -370,11 +368,6 @@ export class RunJSCodeListView extends ItemView {
             }
             treeItem.classList.add(code.form);
             treeItem.classList.add(code.type);
-
-            Object.defineProperty(treeItem, this.code_sym, {
-                value: code,
-                writable: false
-            });
 
             treeItem.addEventListener("contextmenu", (event: MouseEvent) => {
                 this.openFileContextMenu(event, code, treeItem)

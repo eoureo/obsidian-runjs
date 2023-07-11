@@ -34,6 +34,11 @@ import { openConfirmDeleteModal } from "./confirm_modal";
 import { openMessageModal } from "./message_modal";
 import { eventNames } from "process";
 
+class RunJSSetting extends Setting {
+    settings: [] | {};
+    key: string;
+}
+
 export class RunJSSettingTab extends PluginSettingTab {
     plugin: RunJSPlugin;
     autostartContainerEl: HTMLDivElement;
@@ -41,14 +46,10 @@ export class RunJSSettingTab extends PluginSettingTab {
     ribbonIconsContainerEl: HTMLDivElement;
     eventHandlersContainerEl: HTMLDivElement;
     intervalContainerEl: HTMLDivElement;
-    settings_sym: symbol;
-    key_sym: symbol;
 
     constructor(app: App, plugin: RunJSPlugin) {
         super(app, plugin);
         this.plugin = plugin;
-        this.settings_sym = Symbol("settings");
-        this.key_sym = Symbol("key");
     }
 
     display(): void {
@@ -422,7 +423,7 @@ export class RunJSSettingTab extends PluginSettingTab {
             });
             checkError = true;
         }
-        const setting = new Setting(this.autostartContainerEl)
+        const setting = new RunJSSetting(this.autostartContainerEl)
             .setName(
                 createFragment((e) => {
                     const icon = e.createSpan({ text: "icon", cls: "icon" });
@@ -469,11 +470,8 @@ export class RunJSSettingTab extends PluginSettingTab {
                     this.plugin.saveSettings();
                 });
             })
-            .then((st: Setting) => {
-                Object.defineProperty(st, this.settings_sym, {
-                    value: settings,
-                    writable: false
-                });
+            .then((st: RunJSSetting) => {
+                st.settings = settings;
             });
         if (checkError) {
             setting.nameEl.classList.add("mod-warning");
@@ -496,7 +494,7 @@ export class RunJSSettingTab extends PluginSettingTab {
         }
         let textComp: TextComponent;
         let toggleComp: ToggleComponent;
-        const setting = new Setting(this.commandsContainerEl)
+        const setting = new RunJSSetting(this.commandsContainerEl)
             .setName(
                 createFragment((e) => {
                     const icon = e.createSpan({
@@ -569,15 +567,9 @@ export class RunJSSettingTab extends PluginSettingTab {
                     toggle.setDisabled(true);
                 }
             })
-            .then((st: Setting) => {
-                Object.defineProperty(st, this.settings_sym, {
-                    value: settings,
-                    writable: false
-                });
-                Object.defineProperty(st, this.key_sym, {
-                    value: key,
-                    writable: false
-                });
+            .then((st: RunJSSetting) => {
+                st.settings = settings;
+                st.key = key;
             });
 
         if (checkError) {
@@ -608,7 +600,7 @@ export class RunJSSettingTab extends PluginSettingTab {
         }
         let textComp: TextComponent;
         let toggleComp: ToggleComponent;
-        const setting = new Setting(this.ribbonIconsContainerEl)
+        const setting = new RunJSSetting(this.ribbonIconsContainerEl)
             .setName(
                 createFragment((e) => {
                     const icon = e.createSpan({
@@ -731,11 +723,8 @@ export class RunJSSettingTab extends PluginSettingTab {
                     toggle.setDisabled(true);
                 }
             })
-            .then((st: Setting) => {
-                Object.defineProperty(st, this.settings_sym, {
-                    value: settings,
-                    writable: false
-                });
+            .then((st: RunJSSetting) => {
+                st.settings = settings;
             });
         if (checkError) {
             setting.nameEl.classList.add("mod-warning");
@@ -766,7 +755,7 @@ export class RunJSSettingTab extends PluginSettingTab {
         let toggleComp: ToggleComponent;
         let dropdownEventObjComp : DropdownComponent;
         let dropdownEventNameComp : DropdownComponent;
-        const setting = new Setting(this.eventHandlersContainerEl)
+        const setting = new RunJSSetting(this.eventHandlersContainerEl)
             .setName(
                 createFragment((e) => {
                     const icon = e.createSpan({
@@ -816,7 +805,6 @@ export class RunJSSettingTab extends PluginSettingTab {
                     for(let option_i = dropdownEventNameComp.selectEl.options.length - 1; option_i > 0 ; option_i--) {
                         dropdownEventNameComp.selectEl.remove(option_i);
                     }
-                    // dropdownEventNameComp.addOption("", "");
                     if (dropdownEventNameComp && value in EventNames) {
                         for (let eventName of EventNames[value]) {
                             dropdownEventNameComp.addOption(eventName, eventName);
@@ -919,11 +907,8 @@ export class RunJSSettingTab extends PluginSettingTab {
                         }
                     });
             })
-            .then((st: Setting) => {
-                Object.defineProperty(st, this.settings_sym, {
-                    value: settings,
-                    writable: false
-                });
+            .then((st: RunJSSetting) => {
+                st.settings = settings;
 
                 if (dropdownEventObjComp.getValue() === "" || dropdownEventNameComp.getValue() === "") toggleComp.setDisabled(true);
             });
@@ -935,9 +920,8 @@ export class RunJSSettingTab extends PluginSettingTab {
         return setting;
     }
 
-    moveSetting(setting: Setting, isMoveDown: boolean) {
-        // const settings = setting[this.settings_sym];
-        const settings = setting[(this.settings_sym as unknown) as keyof Setting];
+    moveSetting(setting: RunJSSetting, isMoveDown: boolean) {
+        const settings = setting.settings;
         if (settings instanceof Array) {
             const settingEl = setting.settingEl;
 
@@ -963,9 +947,8 @@ export class RunJSSettingTab extends PluginSettingTab {
         }
     }
 
-    deleteSetting(setting: Setting) {
-        // const settings = setting[this.settings_sym];
-        const settings = setting[(this.settings_sym as unknown) as keyof Setting];
+    deleteSetting(setting: RunJSSetting) {
+        const settings = setting.settings;
         const settingEl = setting.settingEl;
 
         if (settings instanceof Array) {
@@ -976,9 +959,7 @@ export class RunJSSettingTab extends PluginSettingTab {
                 settings.splice(index, 1);
             }
         } else {
-            // if (setting[this.key_sym]) delete settings[setting[this.key_sym]];
-
-            const key = setting[(this.key_sym as unknown) as keyof Setting];
+            const key = setting.key;
 
             // @ts-ignore
             if (key) delete settings[key];
