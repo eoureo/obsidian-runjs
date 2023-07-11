@@ -217,8 +217,17 @@ body:not(.is-grabbing)
     display: block;
 }
 
+.runjs-settingtab .command-container .setting-item .setting-item-name .code-name,
+.runjs-settingtab .ribbonIcon-container .setting-item .setting-item-name .code-name,
 .runjs-settingtab .event-handlers-container .setting-item .setting-item-name .code-name {
     cursor: pointer;
+}
+
+.runjs-settingtab .command-container .setting-item .setting-item-name .code-name:hover,
+.runjs-settingtab .ribbonIcon-container .setting-item .setting-item-name .code-name:hover,
+.runjs-settingtab .event-handlers-container .setting-item .setting-item-name .code-name:hover {
+    color: var(--nav-item-color-hover);
+    background-color: var(--nav-item-background-hover);
 }
 
 .runjs-settingtab .event-handlers-container .setting-item .setting-item-control > * {

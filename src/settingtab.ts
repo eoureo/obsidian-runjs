@@ -455,7 +455,7 @@ export class RunJSSettingTab extends PluginSettingTab {
                         openConfirmDeleteModal(
                             this.app,
                             "Delete auto start item",
-                            `Are you sure you want to delete setting of "${autostart[0]}"?`,
+                            `Are you sure you want to delete setting?\n\n${autostart[0]}`,
                             (confirmed: boolean) => {
                                 if (confirmed) {
                                     this.deleteSetting(setting);
@@ -504,7 +504,28 @@ export class RunJSSettingTab extends PluginSettingTab {
                         title: code.form,
                     });
                     if (code && Object.keys(LIST_ICON).contains(code.form)) setIcon(icon, LIST_ICON[code.form]);
-                    e.createSpan({ text: commandSetting.codeName, cls: "code-name" });
+                    e.createSpan({
+                        text: commandSetting.codeName,
+                        cls: "code-name is-clickable",
+                    }, (el) => {
+                        el.onclick = (ev) => {
+                            const runJSCodeListModal = new RunJSCodeListModal(
+                                this.app,
+                                this.plugin,
+                                this.plugin.codesScript,
+                                (code_new) => {
+                                    el.setText(code_new.name);
+                                    setIcon(icon, LIST_ICON[code_new.form])
+                                    commandSetting.codeName = code_new.name;
+                                    this.plugin.saveSettings();
+                                    if (code) Object.assign(code, code_new);
+                                    setting.nameEl.classList.remove("mod-warning");
+                                    setting.nameEl.setAttribute("title", "");
+                                }
+                            );
+                            runJSCodeListModal.open();
+                        };
+                    });
                 })
             )
             .addText((cb) => {
@@ -530,7 +551,7 @@ export class RunJSSettingTab extends PluginSettingTab {
                         openConfirmDeleteModal(
                             this.app,
                             "Delete command item",
-                            `Are you sure you want to delete command "${commandSetting.name}"?`,
+                            `Are you sure you want to delete command?\n\n${commandSetting.name}`,
                             (confirmed: boolean) => {
                                 if (confirmed) {
                                     this.plugin.removeCommand(key);
@@ -609,11 +630,28 @@ export class RunJSSettingTab extends PluginSettingTab {
                         // @ts-ignore
                         title: code.form,
                     });
-                    // setIcon(icon, LIST_ICON[code.form]);
                     if (code && Object.keys(LIST_ICON).contains(code.form)) setIcon(icon, LIST_ICON[code.form]);
                     e.createSpan({
                         text: ribbonIconSetting.codeName,
-                        cls: "code-name",
+                        cls: "code-name is-clickable",
+                    }, (el) => {
+                        el.onclick = (ev) => {
+                            const runJSCodeListModal = new RunJSCodeListModal(
+                                this.app,
+                                this.plugin,
+                                this.plugin.codesScript,
+                                (code_new) => {
+                                    el.setText(code_new.name);
+                                    setIcon(icon, LIST_ICON[code_new.form])
+                                    ribbonIconSetting.codeName = code_new.name;
+                                    this.plugin.saveSettings();
+                                    if (code) Object.assign(code, code_new);
+                                    setting.nameEl.classList.remove("mod-warning");
+                                    setting.nameEl.setAttribute("title", "");
+                                }
+                            );
+                            runJSCodeListModal.open();
+                        };
                     });
                 })
             )
@@ -666,8 +704,8 @@ export class RunJSSettingTab extends PluginSettingTab {
                     .onClick(() => {
                         openConfirmDeleteModal(
                             this.app,
-                            "Delete command item",
-                            `Are you sure you want to delete command "${ribbonIconSetting.name}"?`,
+                            "Delete ribbon icon",
+                            `Are you sure you want to delete ribbon icon?\n\n${ribbonIconSetting.name}`,
                             (confirmed: boolean) => {
                                 if (confirmed) {
                                     this.plugin.removeRibbonIcon(
@@ -764,7 +802,6 @@ export class RunJSSettingTab extends PluginSettingTab {
                         // @ts-ignore
                         title: code.form,
                     });
-                    // setIcon(icon, LIST_ICON[code.form]);
                     if (code && Object.keys(LIST_ICON).contains(code.form)) setIcon(icon, LIST_ICON[code.form]);
                     e.createSpan({
                         text: eventHandlerSetting.codeName,
