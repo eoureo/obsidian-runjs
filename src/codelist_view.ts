@@ -7,8 +7,24 @@ import {
     setIcon,
     MarkdownView,
     MenuItem,
+    Events,
+    EventRef,
 } from "obsidian";
 import { LIST_ICON, RunJS_LISTVIEW_ICON } from "./constants";
+
+
+export class ListviewEvents extends Events {
+    on(name: 'code-menu', callback: (menu: Menu, code: Code) => any, ctx?: any): EventRef;
+    on(name: string, callback: (...data: any[]) => any, ctx?: any): EventRef {
+        return super.on(name, callback, ctx);
+    }
+
+    trigger(name: 'code-menu', menu: Menu, code: Code): void;
+    trigger(name: string, ...data: any[]): void {
+        super.trigger(name, ...data);
+    }
+}
+
 
 export const RunJSCodeListViewType = "runjs-codelist-view";
 
@@ -19,6 +35,7 @@ export class RunJSCodeListView extends ItemView {
     menuOther: Menu;
     groups: {[name: string]: HTMLElement};
     treeItems: HTMLElement[];
+    listviewEvents: ListviewEvents;
 
     constructor(leaf: WorkspaceLeaf, plugin: RunJSPlugin) {
         super(leaf);
@@ -26,8 +43,7 @@ export class RunJSCodeListView extends ItemView {
         this.plugin = plugin;
         this.groups = {};
         this.treeItems = [];
-
-        this.plugin.listview = this;
+        this.listviewEvents = new ListviewEvents();
         
         const contentEl = this.contentEl;
 
@@ -309,6 +325,8 @@ export class RunJSCodeListView extends ItemView {
         //     contentEl.remove();
         // }
         contentEl.empty();
+
+        if (this.plugin.codes.length === 0) return;
         
         const treeItemRoot = contentEl.createDiv({cls:"tree-item nav-folder mod-root has-favorite"});
         const treeItemRootContainer = treeItemRoot.createDiv({cls:"tree-item-children nav-folder-children"});
@@ -390,7 +408,7 @@ export class RunJSCodeListView extends ItemView {
             }
 
             form.addEventListener("click", (event: MouseEvent) => {
-                this.focusFile(code, event.ctrlKey || event.metaKey);
+                this.plugin.focusFile(code, event.ctrlKey || event.metaKey);
             });
 
             const type = createSpan({ text: code.type, cls: "icon type" });
@@ -554,7 +572,7 @@ export class RunJSCodeListView extends ItemView {
                 .setIcon("lucide-edit")
                 .setSection("runjs-codelist-view")
                 .onClick(() => {
-                    this.focusFile(
+                    this.plugin.focusFile(
                         code,
                         event.ctrlKey || event.metaKey
                     );
@@ -562,6 +580,8 @@ export class RunJSCodeListView extends ItemView {
         );
 
         menu.addSeparator();
+
+        this.listviewEvents.trigger("code-menu", menu, code);
 
         const file = this.app.vault.getAbstractFileByPath(code.file);
         this.app.workspace.trigger(
@@ -600,47 +620,4 @@ export class RunJSCodeListView extends ItemView {
             this.collapseFolder(groupEl, collapse);
         })
     }
-
-    focusFile = async (
-        code: Code,
-        shouldSplit = false
-    ): Promise<void> => {
-        const targetFile = this.app.vault
-            .getFiles()
-            .find((f) => f.path === code.file);
-
-        if (targetFile) {
-            let leaf = this.app.workspace.getMostRecentLeaf();
-
-            if (leaf) {
-                const createLeaf = shouldSplit || leaf.getViewState().pinned;
-                if (createLeaf) {
-                    if (this.plugin.settings.listviewOpenType == "split")
-                        leaf = this.app.workspace.getLeaf("split");
-                    else if (this.plugin.settings.listviewOpenType == "window")
-                        leaf = this.app.workspace.getLeaf("window");
-                    else leaf = this.app.workspace.getLeaf("tab");
-                }
-                await leaf.openFile(targetFile);
-
-                if (code.form != "codeblock") return;
-
-                const viewState = leaf.getViewState();
-                viewState.state.mode = "source";
-                viewState.state.source = true;
-                await leaf.setViewState(viewState);
-            }
-
-            // @ts-ignore
-            const editor = this.app.workspace.getActiveViewOfType(MarkdownView)?.sourceMode.cmEditor;
-
-            if (editor && code.position) {
-                editor.setCursor(code.position?.start.line);
-                // editor.scrollTo(code.position?.start.line);
-                editor.scrollIntoView({from: code.position?.start, to: code.position?.end});
-            }
-        } else {
-            this.plugin.log("error", "Cannot find a file:" + code.file);
-        }
-    };
 }

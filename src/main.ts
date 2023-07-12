@@ -12,6 +12,7 @@ import {
     Workspace,
     Vault,
     MetadataCache,
+    MarkdownView
 } from "obsidian";
 import * as obsidian from "obsidian";
 import * as Module from "module";
@@ -152,7 +153,6 @@ export default class RunJSPlugin extends Plugin {
     codesModule: CodesModule;
     modulesLoaded: ModulesLoaded;
     settingTab: RunJSSettingTab;
-    listview: RunJSCodeListView;
     state: string;
     runJSSymbol: symbol;
     refreshId: number;
@@ -200,6 +200,11 @@ export default class RunJSPlugin extends Plugin {
         await this.loadSettings();
 
         addIcons();
+
+        this.registerView(
+            RunJSCodeListViewType,
+            (leaf) => new RunJSCodeListView(leaf, this)
+        );
 
         // This creates an icon in the left ribbon.
         const ribbonIconEl = this.addRibbonIcon(
@@ -252,12 +257,9 @@ export default class RunJSPlugin extends Plugin {
                 }
             }
 
-            this.registerView(
-                RunJSCodeListViewType,
-                (leaf) => new RunJSCodeListView(leaf, this)
-            );
-
             await this.renderCodeListView();
+            
+            this.listview?.update();
 
             for (let autostart of this.settings.autostarts) {
                 if (autostart[1] === true) {
@@ -343,7 +345,7 @@ export default class RunJSPlugin extends Plugin {
 
         if (checkChanged) {
             new Notice(this.manifest.name + ": codes updated");
-            this.listview.update();
+            this.listview?.update();
         }
     }
 
@@ -448,7 +450,7 @@ export default class RunJSPlugin extends Plugin {
 
         if (codesTarget.length > 0 || isAddedCode) {
             new Notice(this.manifest.name + ": codes updated");
-            this.listview.update();
+            this.listview?.update();
         } else if (isRefreshedCode) {
             new Notice(this.manifest.name + ": codes refreshed");
         }
@@ -482,7 +484,7 @@ export default class RunJSPlugin extends Plugin {
 
         if (checkChanged) {
             new Notice(this.manifest.name + ": codes updated");
-            this.listview.update();
+            this.listview?.update();
         }
     }
 
@@ -511,7 +513,7 @@ export default class RunJSPlugin extends Plugin {
 
         if (doUpdate && codesTarget.length > 0) {
             new Notice(this.manifest.name + ": codes updated");
-            this.listview.update();
+            this.listview?.update();
         }
     }
 
@@ -557,9 +559,15 @@ export default class RunJSPlugin extends Plugin {
     }
 
     async openCodeListView() {
-        const leaf = await this.renderCodeListView();
+        let [leaf] = this.app.workspace.getLeavesOfType(RunJSCodeListViewType);
 
-        this.app.workspace.revealLeaf(leaf);
+        if (!leaf) {
+            leaf = await this.renderCodeListView();
+        }
+
+        if (leaf) {
+            this.app.workspace.revealLeaf(leaf);
+        }
     }
 
     async renderCodeListView(): Promise<WorkspaceLeaf> {
@@ -585,7 +593,7 @@ export default class RunJSPlugin extends Plugin {
     }
 
     async runCode(code: Code | null, ...args: any[]) {
-        let text: string = "";
+    let text: string = "";
         let folder: string = "";
 
         if (code == null) {
@@ -622,7 +630,7 @@ export default class RunJSPlugin extends Plugin {
 
         if (changed) {
             new Notice(this.manifest.name + ": codes updated");
-            this.listview.update();
+            this.listview?.update();
         }
     }
 
@@ -1157,8 +1165,13 @@ export default class RunJSPlugin extends Plugin {
             this.runCodeByName(setting.codeName, ...args);
         };
         
-        // const split = setting.eventObject;
-        const obj = this.app[(setting.eventObject as unknown) as keyof App];
+        let obj;
+        if (setting.eventObject === "RunJS.listview") {
+            obj = this.listview?.listviewEvents;
+        } else {
+            obj = this.app[(setting.eventObject as unknown) as keyof App];
+        }
+        
         if (obj && "on" in obj && typeof obj.on === "function") {
             // @ts-ignore
             const eventRef = obj.on(setting.eventName, callbackFunc.bind(this));
@@ -1289,6 +1302,46 @@ export default class RunJSPlugin extends Plugin {
         this.saveSettings();
     }
 
+    focusFile = async (code: Code, shouldSplit = false): Promise<void> => {
+        const targetFile = this.app.vault
+            .getFiles()
+            .find((f) => f.path === code.file);
+
+        if (targetFile) {
+            let leaf = this.app.workspace.getMostRecentLeaf();
+
+            if (leaf) {
+                const createLeaf = shouldSplit || leaf.getViewState().pinned;
+                if (createLeaf) {
+                    if (this.settings.listviewOpenType == "split")
+                        leaf = this.app.workspace.getLeaf("split");
+                    else if (this.settings.listviewOpenType == "window")
+                        leaf = this.app.workspace.getLeaf("window");
+                    else leaf = this.app.workspace.getLeaf("tab");
+                }
+                await leaf.openFile(targetFile);
+
+                if (code.form != "codeblock") return;
+
+                const viewState = leaf.getViewState();
+                viewState.state.mode = "source";
+                viewState.state.source = true;
+                await leaf.setViewState(viewState);
+            }
+
+            // @ts-ignore
+            const editor = this.app.workspace.getActiveViewOfType(MarkdownView)?.sourceMode.cmEditor;
+
+            if (editor && code.position) {
+                editor.setCursor(code.position?.start.line);
+                // editor.scrollTo(code.position?.start.line);
+                editor.scrollIntoView({from: code.position?.start, to: code.position?.end});
+            }
+        } else {
+            this.log("error", "Cannot find a file:" + code.file);
+        }
+    };
+
     log(...args: any[]) {
         // this.log.caller.name
         const now = Date.now();
@@ -1330,6 +1383,12 @@ export default class RunJSPlugin extends Plugin {
             this._timeZoneOffsetString = `${sign}${hours}${minutes}`;
         }
         return this._timeZoneOffsetString;
+    }
+
+    get listview(): RunJSCodeListView | null {
+        const leaves = this.app.workspace.getLeavesOfType(RunJSCodeListViewType);
+        if (leaves.length == 0) return null;
+        return <RunJSCodeListView>leaves[0].view;
     }
 
     async reload() {

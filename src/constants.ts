@@ -32,6 +32,9 @@ export const EventNames: {[key: string]: string[]} = {
         "deleted",
         "resolve",
         "resolved"
+    ],
+    "RunJS.listview": [
+        "code-menu"
     ]
 };
 
