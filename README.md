@@ -71,7 +71,8 @@ Some of the code may need to be modified to suit your environment. Settings that
   - [Edit note](https://github.com/eoureo/obsidian-runjs/discussions/12): Path to File url, JS Comment
   - [Module - RunJS-Utils.mjs](https://github.com/eoureo/obsidian-runjs/discussions/9): getSelection(), setSelection(text)
   - [Insert Callout (Module for inserting callouts in various ways and Codes)](https://github.com/eoureo/obsidian-runjs/discussions/17)
-  - [Event handler - file-menu, editor-menu](https://github.com/eoureo/obsidian-runjs/discussions/24)
+  - [Event handler - file-menu, editor-menu](https://github.com/eoureo/obsidian-runjs/discussions/24) - Copy file path, Open with VSCode - selection
+  - [Event handler - code-menu (RunJS)](https://github.com/eoureo/obsidian-runjs/discussions/27) - Copy code name, Open object modal
 - **Codes Share**: Please share and introduce your code to [Discussions - Codes Share](https://github.com/eoureo/obsidian-runjs/discussions/categories/codes-share).
 
 

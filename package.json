@@ -1,6 +1,6 @@
 {
 	"name": "runjs",
-	"version": "0.5.1",
+	"version": "0.5.2",
 	"description": "Run easily JavaScript codes for managing Obsidian and its notes.",
 	"main": "main.js",
 	"scripts": {
