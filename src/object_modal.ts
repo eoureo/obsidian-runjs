@@ -1,6 +1,7 @@
 import {
     App,
     Instruction,
+    MarkdownRenderer,
     Notice,
     Plugin,
     SuggestModal,
@@ -29,6 +30,8 @@ export class ObjectModal extends SuggestModal<string> {
     promptInputContainerEl: HTMLElement | null;
     _isPrototypeVisible: boolean;
     _isDetail: boolean;
+    renderJobs: Array<[HTMLElement, string]>;
+    renderJobsId: number | null;
 
     constructor(
         app: App,
@@ -46,6 +49,8 @@ export class ObjectModal extends SuggestModal<string> {
         this._objectRoot = object;
         this.limit = 100000;
         this.isDetail = true;
+        this.renderJobs = [];
+        this.renderJobsId = null;
 
         this.promptInputContainerEl = this.inputEl.parentElement;
 
@@ -189,8 +194,42 @@ export class ObjectModal extends SuggestModal<string> {
         if (["object", "array"].contains(info.type)) el.addClass("folder");
 
         try {
-            el.createEl("small", { text: info.text });
+            const span = el.createEl("small");
+            const pre = span.createEl("pre", { cls: "language-js" });
+            const code = pre.createEl("code", { text: info.text.slice(0,150), cls: "language-js" });
+            this.addRenderJob(span, info.text.slice(0,150));
         } catch (e) { }
+    }
+
+    addRenderJob(el: HTMLElement, text: string) {
+        this.renderJobs.push([el, text]);
+        this.startRenderJobs();
+    }
+
+    startRenderJobs() {
+        if (this.renderJobs.length > 0 && this.renderJobsId === null) {
+            this.renderJobsId = Date.now();
+            this.doRenderJobs();
+        }
+    }
+
+    stopRenderJobs() {
+        this.renderJobsId = null;
+        this.renderJobs.splice(0, this.renderJobs.length);
+    }
+
+    async doRenderJobs() {
+        if (this.renderJobs.length == 0) {
+            this.stopRenderJobs();
+            return;
+        }
+        const job = this.renderJobs.shift();
+        if (job === undefined) return;
+        job[0].empty();
+        // @ts-ignore
+        await MarkdownRenderer.render(this.app, "```js\n" + job[1] + "\n```\n", job[0], '', null);
+        await sleep(50);
+        await this.doRenderJobs();
     }
 
     // Perform action on the selected suggestion.
@@ -214,11 +253,12 @@ export class ObjectModal extends SuggestModal<string> {
         if (this.object != object_new) {
             this._object = object_new;
             this.addInfos();
-            this._update();
+            // this._update();
         }
     }
 
     _update() {
+        this.stopRenderJobs();
         // @ts-ignore
         this.updateSuggestions();
     }
@@ -309,6 +349,8 @@ export class ObjectModal extends SuggestModal<string> {
     }
 
     close(evt?: KeyboardEvent) {
+        this.stopRenderJobs();
+
         // @ts-ignore
         if (this.isClose || (evt && evt?.target.classList?.contains("modal-bg")))
             super.close();

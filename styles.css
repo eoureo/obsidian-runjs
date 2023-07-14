@@ -314,6 +314,21 @@ body:not(.is-grabbing)
     font-style: italic;
 }
 
+.runjs-object-modal .suggestion-item small > pre {
+    margin: 0;
+}
+
+.runjs-object-modal .suggestion-item small > pre > code {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0;
+}
+
+.runjs-object-modal .suggestion-item small > pre > button {
+    display: none;
+}
+
 .runjs-object-modal.hide-detail small {
     display: none;
 }
