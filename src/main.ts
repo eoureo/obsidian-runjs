@@ -160,7 +160,7 @@ export default class RunJSPlugin extends Plugin {
     refreshLimitTime: number;
     registeredEvents: RegisteredEvents;
 
-    regexpCodeblockIndicator: RegExp = /^`{3,}(?:javascript|js) RunJS:(.*)/;
+    regexpCodeblockIndicator: RegExp = /^`{3,}(?:[jJ][aA][vV][aA][sS][cC][rR][iI][pP][tT]|[jJ][sS]).*?\sRunJS:(.*)/;
     eventRenameFile: EventRef;
     eventDeleteFile: EventRef;
     eventModifyFile: EventRef;
