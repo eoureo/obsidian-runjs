@@ -82,8 +82,8 @@ export function joinPath(folder: string, filePath: string): string {
             continue;
         } else if (part === '..') {
             // 상위 디렉토리로 이동합니다.
-            if (resolvedParts.length == 0 || resolvedParts[resolvedParts.length -1] === "..") resolvedParts.push(part)
-            else if (resolvedParts[resolvedParts.length -1] === ".") {
+            if (resolvedParts.length == 0 || resolvedParts[resolvedParts.length - 1] === "..") resolvedParts.push(part)
+            else if (resolvedParts[resolvedParts.length - 1] === ".") {
                 resolvedParts.pop();
                 resolvedParts.push(part);
             } else resolvedParts.pop();
@@ -100,4 +100,9 @@ export function joinPath(folder: string, filePath: string): string {
     // resolvedPath = resolvedPath.replace(/^\.\//, '');
 
     return resolvedPath;
+}
+
+export function htmlDecode(input: string): string | null {
+    var doc = new DOMParser().parseFromString(input, "text/html");
+    return doc.documentElement.textContent;
 }

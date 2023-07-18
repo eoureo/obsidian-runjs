@@ -32,19 +32,28 @@ In this example, the [Insert Callout](https://github.com/eoureo/obsidian-runjs/d
 
 JavaScript codeblock(js, javascript) must have the following directive format to be recognized as code in RunJS.
 
-- RunJS:"name"
-- RunJS:"group/name"
-- RunJS:{n:"name"}
-- RunJS:{n:"group/name",t:"s"}
+- RunJS="name"
+- RunJS="group/name"
+- RunJS="{n:'name'}"
+- RunJS="{n:'group/name',t:'s'}"
+
+In .js and .mjs files, use as follows.
+
+```js
+/**
+ * @RunJS group/name
+ * @RunJS {n:'group/name'}
+ */
+```
 
 If your code is in a .js file (executable) or .mjs file (module), you can simply put it in the RunJS scripts folder without any directives.
 
 ````markdown
-```js RunJS:"Test/Hello, World!"
+```js RunJS="Test/Hello, World!"
 new Notice("Hello, World!");
 ```
 or
-```js RunJS:{n:"Test/Hello, World!",t:"s"}
+```js RunJS="{n:'Test/Hello, World!',t:'s'}"
 new Notice("Hello, World!");
 ```
 ````
@@ -53,8 +62,7 @@ new Notice("Hello, World!");
 
 You can see more at the link below.
 
-Hello, World! : Discussions - Codes  
-[https://github.com/eoureo/obsidian-runjs/discussions/2](https://github.com/eoureo/obsidian-runjs/discussions/2)
+Hello, World! : Discussions - Codes [https://github.com/eoureo/obsidian-runjs/discussions/2](https://github.com/eoureo/obsidian-runjs/discussions/2)
 
 
 ## How to get code
@@ -76,8 +84,8 @@ Some of the code may need to be modified to suit your environment. Settings that
 - **Codes Share**: Please share and introduce your code to [Discussions - Codes Share](https://github.com/eoureo/obsidian-runjs/discussions/categories/codes-share).
 
 
-**⚠️ Caution**:  
-*Codes can do the same thing as other plugins. So bad code can potentially disrupt Obsidian or corrupt notes. It is important to ensure that the code is safe before executing it.*
+> [!caution]
+> *Codes can do the same thing as other plugins. So bad code can potentially disrupt Obsidian or corrupt notes. It is important to ensure that the code is safe before executing it.*
 
 
 ## Useful starter codes
@@ -116,8 +124,8 @@ const url = require('url');
 Continuing from the example above ("Hello, World!"), write the following code in another code block. Then refresh the code list and you will see the new code. Then click it to run.
 
 ````markdown
-```js RunJS:{n:"Obsidian/Open icon modal",t:"s"}
-// const runJS = app.plugins.plugins["runjs"];
+```js RunJS="{n:'Obsidian/Open icon modal',t:'s'}"
+// const runJS = this.app.plugins.plugins["runjs"];
 const runJS = this;
 runJS.openIconModal();
 ```
@@ -127,8 +135,7 @@ runJS.openIconModal();
 
 You can see more at the link below.
 
-Open icon modal : Discussions - Codes  
-[https://github.com/eoureo/obsidian-runjs/discussions/3](https://github.com/eoureo/obsidian-runjs/discussions/3)
+Open icon modal : Discussions - Codes [https://github.com/eoureo/obsidian-runjs/discussions/3](https://github.com/eoureo/obsidian-runjs/discussions/3)
 
 
 ### Scripts & Modules
@@ -141,7 +148,7 @@ test.md - Scripts and modules can be put in a code block, either together in a s
 
 ````markdown
 
-```js RunJS:{n:"Test/code 1", t:"s"}
+```js RunJS="{n:'Test/code 1', t:'s'}"
 import { Notice } from 'obsidian';
 import { myFunc1 } from 'Test/module 1'; // codeblock: pages/test.md
 import { myFunc2 } from 'Test/module 2'; // file: ./testFolder/module 2.mjs
@@ -156,7 +163,7 @@ myFunc2("[code 1] Run module func2.");
 myFunc3("[code 1] Run module func3.");
 ```
 
-```js RunJS:{n:"Test/module 1", t:"m"}
+```js RunJS="{n:'Test/module 1', t:'m'}"
 export function myFunc1(app, ...args) {
   let runJS = app.plugins.plugins["runjs"];
   runJS.log("info", "module 1:", ...args);
@@ -173,7 +180,7 @@ Scripts_RunJS/testFolder/test.js - Script(.js file) saved in the script file sto
 /**
  * js file - script. executable code
  * 
- * @RunJS {n:"Test/code 2"}
+ * @RunJS {n:'Test/code 2'}
  */
 import { myFunc1 } from 'Test/module 1'; // codeblock: pages/test.md
 import { myFunc2 } from 'Test/module 2'; // file: ./testFolder/module 2.mjs
@@ -194,7 +201,7 @@ Scripts_RunJS/testFolder/module 2.mjs - module file
 /**
  * mjs file - module
  * 
- * @RunJS {n:"Test/module 2"}
+ * @RunJS {n:'Test/module 2'}
  */
 import { Notice } from 'obsidian';
 
@@ -211,7 +218,7 @@ Scripts_RunJS/testFolder/module 3.mjs - module file
 /**
  * mjs file - module
  * 
- * X@RunJS {n:"group/module 3"} // not use name
+ * X@RunJS {n:'group/module 3'} // not use name
  */
 import { Notice } from 'obsidian';
 

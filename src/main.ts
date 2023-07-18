@@ -12,7 +12,8 @@ import {
     Workspace,
     Vault,
     MetadataCache,
-    MarkdownView
+    MarkdownView,
+    moment
 } from "obsidian";
 import * as obsidian from "obsidian";
 import * as Module from "module";
@@ -21,7 +22,7 @@ import {
     RunJSCodeListView,
     RunJSCodeListViewType,
 } from "./codelist_view";
-import { addIcons, getDirname, getTagInJSDocComments, joinPath } from "./utils";
+import { addIcons, getDirname, getTagInJSDocComments, htmlDecode, joinPath } from "./utils";
 import { RunJSSettingTab } from "./settingtab";
 import { RunJSCodeListModal } from "./codelist_modal";
 import { IconModal } from "./icon_modal";
@@ -160,13 +161,11 @@ export default class RunJSPlugin extends Plugin {
     refreshLimitTime: number;
     registeredEvents: RegisteredEvents;
 
-    regexpCodeblockIndicator: RegExp = /^`{3,}(?:[jJ][aA][vV][aA][sS][cC][rR][iI][pP][tT]|[jJ][sS]).*?\sRunJS:(.*)/;
+    regexpCodeblockDirective: RegExp = /^\s*`{3,}(?:javascript|js).*?\sRunJS=(['"])(\\.|(?:(?!\1).)*)\1/i;
     eventRenameFile: EventRef;
     eventDeleteFile: EventRef;
     eventModifyFile: EventRef;
     eventCreateFile: EventRef;
-
-    private _timeZoneOffsetString: string;
 
     constructor(app: App, manifest: PluginManifest) {
         super(app, manifest);
@@ -774,13 +773,13 @@ export default class RunJSPlugin extends Plugin {
 
                 const position = sections[i].position;
 
-                const match = contents[position.start.line].match(this.regexpCodeblockIndicator);
+                const match = contents[position.start.line].match(this.regexpCodeblockDirective);
 
                 if (!match) {
                     continue;
                 }
 
-                const codeSetting: CodeSetting = this.findCodeSetting(match[1]);
+                const codeSetting: CodeSetting = this.findCodeSetting(match[2]);
 
                 if (!codeSetting) {
                     continue;
@@ -883,27 +882,32 @@ export default class RunJSPlugin extends Plugin {
         const match = settingStr.match(/({.*})?(.*)/);
         if (!match) return {};
 
-        if (match[1] != undefined) {
-            const setting = match[1]
-                .trim()
-                .replace(/(['"])(\\.|(?:(?!\1).)*)\1/g, (in_quotes: string) =>
-                    in_quotes.replaceAll(":", "\uffff")
-                )
-                .replace(/(\w+)(?=:)/g, '"$1"')
-                .replaceAll("\uffff", ":");
+        try {
+            if (match[1] != undefined) {
+                const setting = match[1]
+                    .trim()
+                    .replace(/([^\\])\'/g, "$1\"")
+                    .replace(/\\'/g,"'")
+                    .replace(/(['"])(\\.|(?:(?!\1).)*)\1/g, (in_quotes: string) =>
+                        in_quotes.replaceAll(":", "\uffff")
+                    )
+                    .replace(/(\w+)(?=:)/g, '"$1"')
+                    .replaceAll("\uffff", ":")
+                    .replace(/&quot;/g, "\\\"");
 
-            return JSON.parse(setting);
-        } else if (match[2] != undefined) {
-            const match2 = match[2]
-                .trim()
-                .match(/^(['"])((?:\\.|[^\1])*)\1|^([^\s]*)/);
-            if (!match2) return {};
+                return JSON.parse(htmlDecode(setting) ?? "") ?? {};
+            } else if (match[2] != undefined) {
+                let name = htmlDecode(match[2]);
 
-            let name = "";
-            if (match2[2]) name = match2[2].replaceAll(/\\(.)/g, "$1");
-            else if (match2[3]) name = match2[3];
+                if (name == null) return {};
 
-            return name != "" ? { n: name, t: "s" } : {};
+                return name != "" ? { n: name, t: "s" } : {};
+            }
+        } catch(error) {
+            // console.error(this.manifest.name + ": findCodeSetting: ", settingStr);
+            // console.error(this.manifest.name + ": findCodeSetting: ", error);
+            this.log("error", "findCodeSetting", settingStr);
+            this.log("error", "findCodeSetting", error);
         }
 
         return {};
@@ -1343,12 +1347,7 @@ export default class RunJSPlugin extends Plugin {
     };
 
     log(...args: any[]) {
-        // this.log.caller.name
-        const now = Date.now();
-        const timezoneOffset = new Date().getTimezoneOffset() * 60000;
-        const timezoneDate = new Date(now - timezoneOffset);
-        // const timezoneDateISOSting = timezoneDate.toISOString().replace(/\.\d*Z/, this.timeZoneOffsetString);
-        const timezoneDateISOSting = timezoneDate.toISOString().slice(0, -1) + this.timeZoneOffsetString;
+        const timezoneDateISOSting = moment().format();
 
         let type: string = "log";
         if (Object.keys(console).contains(args[0])) {
@@ -1364,25 +1363,20 @@ export default class RunJSPlugin extends Plugin {
                 const console_func = console[type];
                 if (console_func) console_func(this.manifest.name + ":", ...args);
             }
-            if (this.settings.logFile && this.settings.logFilePath != "") {
-                const tFile = this.app.vault.getAbstractFileByPath(this.settings.logFilePath);
-                if (tFile instanceof TFile) this.app.vault.append(tFile, "- " + timezoneDateISOSting + " [" + type + "] " + args.join(" ") + "\n");
+            if (this.settings.logFile) {
+                if (this.settings.logFilePath != "") {
+                    const tFile = this.app.vault.getAbstractFileByPath(this.settings.logFilePath);
+                    if (tFile instanceof TFile) {
+                        this.app.vault.append(tFile, "- " + timezoneDateISOSting + " [" + type + "] " + args.join(" ") + "\n");
+                    } else {
+                        new Notice(this.manifest.name + ": No log file. - " + this.settings.logFilePath);
+                        console.error(this.manifest.name + ": No log file. - " + this.settings.logFilePath);
+                    }
+                }
             }
         } catch (e) {
             console.error(this.manifest.name + ":", "log - error.")
         }
-    }
-
-    get timeZoneOffsetString(): string {
-        if (this._timeZoneOffsetString == undefined) {
-            const timeZoneOffset = new Date().getTimezoneOffset();
-            const sign = timeZoneOffset <= 0 ? "+" : "-";
-            const absOffset = Math.abs(timeZoneOffset);
-            const hours = Math.floor(absOffset / 60).toString().padStart(2, "0");
-            const minutes = (absOffset % 60).toString().padStart(2, "0");
-            this._timeZoneOffsetString = `${sign}${hours}${minutes}`;
-        }
-        return this._timeZoneOffsetString;
     }
 
     get listview(): RunJSCodeListView | null {

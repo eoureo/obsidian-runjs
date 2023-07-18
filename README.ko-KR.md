@@ -32,19 +32,28 @@ RunJS는 [옵시디언](https://obsidian.md/)에서 JavaScript 코드를 실행�
 
 JavaScript 코드블럭(js, javascript)에 다음과 같은 지시자 형식을 갖추어야 RunJS에서 코드로 인식 합니다.
 
-- RunJS:"이름"
-- RunJS:"그룹/이름"
-- RunJS:{n:"이름"}
-- RunJS:{n:"그룹/이름",t:"s"}
+- RunJS="name"
+- RunJS="group/name"
+- RunJS="{n:'name'}"
+- RunJS="{n:'group/name',t:'s'}"
+
+.js, .mjs 파일에서는 다음과 같이 사용합니다.
+
+```js
+/**
+ * @RunJS name
+ * @RunJS {n:'group/name'}
+ */
+```
 
 .js 파일(실행)이나 .mjs 파일(모듈)로 된 코드라면 지시자 없이 RunJS 스크립트 폴더에 넣기만 해도 됩니다.
 
 ````markdown
-```js RunJS:"Test/Hello, World!"
+```js RunJS="Test/Hello, World!"
 new Notice("Hello, World!");
 ```
 또는
-```js RunJS:{n:"Test/Hello, World!",t:"s"}
+```js RunJS="{n:'Test/Hello, World!',t:'s'}"
 new Notice("Hello, World!");
 ```
 ````
@@ -53,8 +62,7 @@ new Notice("Hello, World!");
 
 아래 링크에서 더 볼 수 있습니다.
 
-Hello, World! : Discussions - Codes  
-[https://github.com/eoureo/obsidian-runjs/discussions/2](https://github.com/eoureo/obsidian-runjs/discussions/2)
+Hello, World! : Discussions - Codes [https://github.com/eoureo/obsidian-runjs/discussions/2](https://github.com/eoureo/obsidian-runjs/discussions/2)
 
 
 ## 코드를 얻는 방법
@@ -76,8 +84,8 @@ Hello, World! : Discussions - Codes
 - **Codes Share**: [Discussions - Codes Share](https://github.com/eoureo/obsidian-runjs/discussions/categories/codes-share)에  당신이 만든 코드를 공유하고 소개하여 주세요.
 
 
-**⚠️ 주의 사항**:  
-*코드들은 다른 플러그인들과 동일한 작업을 수행할 수 있습니다. 따라서 잘못된 코드는 옵시디언이나 노트들을 망가뜨릴 수 있습니다. 코드를 실행하기 전에 안전한 코드인지 확인해야 합니다.*
+> [!caution] 주의 사항
+> *코드들은 다른 플러그인들과 동일한 작업을 수행할 수 있습니다. 따라서 잘못된 코드는 옵시디언이나 노트들을 망가뜨릴 수 있습니다. 코드를 실행하기 전에 안전한 코드인지 확인해야 합니다.*
 
 
 ## 쓸모있는 코드들
@@ -116,8 +124,8 @@ const url = require('url');
 위의 예("Hello, World!" )에 이어서 다른 코드 블록에 다음과 같은 코드를 작성합니다. 그다음 코드목록을 새로고침 하면 새 코드가 보입니다. 그다음 클릭하여 실행합니다.
 
 ````markdown
-```js RunJS:{n:"Obsidian/Open icon modal",t:"s"}
-// const runJS = app.plugins.plugins["runjs"];
+```js RunJS="{n:'Obsidian/Open icon modal',t:'s'}"
+// const runJS = this.app.plugins.plugins["runjs"];
 const runJS = this;
 runJS.openIconModal();
 ```
@@ -127,8 +135,7 @@ runJS.openIconModal();
 
 아래 링크에서 더 보실 수 있습니다.
 
-Open icon modal : Discussions - Codes  
-[https://github.com/eoureo/obsidian-runjs/discussions/3](https://github.com/eoureo/obsidian-runjs/discussions/3)
+Open icon modal : Discussions - Codes [https://github.com/eoureo/obsidian-runjs/discussions/3](https://github.com/eoureo/obsidian-runjs/discussions/3)
 
 
 ### 스크립트와 모듈
@@ -141,7 +148,7 @@ test.md - 스크립트들과 모듈들은 하나의 파일에 같이 또는 여�
 
 ````markdown
 
-```js RunJS:{n:"Test/code 1", t:"s"}
+```js RunJS="{n:'Test/code 1', t:'s'}"
 import { Notice } from 'obsidian';
 import { myFunc1 } from 'Test/module 1'; // codeblock: pages/test.md
 import { myFunc2 } from 'Test/module 2'; // file: ./testFolder/module 2.mjs
@@ -156,7 +163,7 @@ myFunc2("[code 1] Run module func2.");
 myFunc3("[code 1] Run module func3.");
 ```
 
-```js RunJS:{n:"Test/module 1", t:"m"}
+```js RunJS="{n:'Test/module 1', t:'m'}"
 export function myFunc1(app, ...args) {
   let runJS = app.plugins.plugins["runjs"];
   runJS.log("info", "module 1:", ...args);
@@ -173,7 +180,7 @@ Scripts_RunJS/testFolder/test.js - 스크립트 파일 저장 폴더(플러그�
 /**
  * js file - script. executable code
  * 
- * @RunJS {n:"Test/code 2"}
+ * @RunJS {n:'Test/code 2'}
  */
 import { myFunc1 } from 'Test/module 1'; // codeblock: pages/test.md
 import { myFunc2 } from 'Test/module 2'; // file: ./testFolder/module 2.mjs
@@ -194,7 +201,7 @@ Scripts_RunJS/testFolder/module 2.mjs - 모듈 파일(.mjs)
 /**
  * mjs file - module
  * 
- * @RunJS {n:"Test/module 2"}
+ * @RunJS {n:'Test/module 2'}
  */
 import { Notice } from 'obsidian';
 
@@ -211,7 +218,7 @@ Scripts_RunJS/testFolder/module 3.mjs - 모듈 파일(.mjs)
 /**
  * mjs file - module
  * 
- * X@RunJS {n:"group/module 3"} // not use name
+ * X@RunJS {n:'group/module 3'} // not use name
  */
 import { Notice } from 'obsidian';
 
