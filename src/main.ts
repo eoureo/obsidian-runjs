@@ -616,9 +616,6 @@ export default class RunJSPlugin extends Plugin {
             }
         }
 
-        // let F = new AsyncFunction('obsidian', this.modifyImport(text, ""));
-        // await F.apply(this, obsidian);
-
         const m_text = this.modifyImport(text, folder);
         const F = new AsyncFunction(m_text);
         await F.apply(this, args);
@@ -904,8 +901,6 @@ export default class RunJSPlugin extends Plugin {
                 return name != "" ? { n: name, t: "s" } : {};
             }
         } catch(error) {
-            // console.error(this.manifest.name + ": findCodeSetting: ", settingStr);
-            // console.error(this.manifest.name + ": findCodeSetting: ", error);
             this.log("error", "findCodeSetting", settingStr);
             this.log("error", "findCodeSetting", error);
         }
@@ -937,7 +932,6 @@ export default class RunJSPlugin extends Plugin {
                     getDirname(codeName)
                 );
 
-                // const blob = new Blob([text_modified], { type: "text/javascript" });
                 const blob = new File([text_modified], "codeName", {
                     type: "text/javascript"
                 });
@@ -946,7 +940,6 @@ export default class RunJSPlugin extends Plugin {
                 const module = await import(url);
 
                 if (this.modulesLoaded[code.name]?.module) {
-                    // delete this.modulesLoaded[code.name].module;
                     this.modulesLoaded[code.name].module = null;
                 }
 
@@ -962,11 +955,8 @@ export default class RunJSPlugin extends Plugin {
                 return module;
             }
         } else {
-            // return await import(codeName);
             return await require(codeName);
         }
-        // Uncaught (in promise) TypeError: Failed to resolve module specifier 'moment' - import
-        // Uncaught (in promise) Error: Cannot find module 'moment' - require
     }
 
     modifyImport(codeText: string, folder: string): string {
@@ -1213,7 +1203,6 @@ export default class RunJSPlugin extends Plugin {
         if (setting == null) return;
         
         const eventId = [setting.eventObject, setting.eventName, setting.codeName].join(":");
-        // const split = setting.eventObject.split(":");
         const obj = this.app[(setting.eventObject as unknown) as keyof App];
         if (obj && "offref" in obj && typeof obj.offref === "function") obj.offref(this.registeredEvents[eventId]);
         delete this.registeredEvents[eventId];
@@ -1347,35 +1336,55 @@ export default class RunJSPlugin extends Plugin {
     };
 
     log(...args: any[]) {
-        const timezoneDateISOSting = moment().format();
-
         let type: string = "log";
         if (Object.keys(console).contains(args[0])) {
-            type = args[0];
-            args.shift();
+            type = args.shift();
         }
 
         try {
-            if (this.settings.logNotice)
-                new Notice(this.manifest.name + ":" + " [" + type + "] " + args.join(" "));
+            const logMessage = `${this.manifest.name}: [${type}] ${args.join(" ")}`;
+    
+            if (this.settings.logNotice) {
+                new Notice(logMessage);
+            }
+    
             if (this.settings.logConsole) {
                 // @ts-ignore
-                const console_func = console[type];
-                if (console_func) console_func(this.manifest.name + ":", ...args);
-            }
-            if (this.settings.logFile) {
-                if (this.settings.logFilePath != "") {
-                    const tFile = this.app.vault.getAbstractFileByPath(this.settings.logFilePath);
-                    if (tFile instanceof TFile) {
-                        this.app.vault.append(tFile, "- " + timezoneDateISOSting + " [" + type + "] " + args.join(" ") + "\n");
-                    } else {
-                        new Notice(this.manifest.name + ": No log file. - " + this.settings.logFilePath);
-                        console.error(this.manifest.name + ": No log file. - " + this.settings.logFilePath);
-                    }
+                const consoleFunc = console[type] as (...args: any[]) => void;
+                if (consoleFunc) {
+                    consoleFunc(`${this.manifest.name}:`, ...args);
                 }
             }
-        } catch (e) {
-            console.error(this.manifest.name + ":", "log - error.")
+    
+            if (this.settings.logFile && this.settings.logFilePath) {
+                this.logFile(type, ...args);
+            }
+        } catch (error) {
+            console.error(this.manifest.name + ":", "log - error.", error)
+        }
+    }
+
+    logFile(...args: any[]) {
+        const timezoneDateISOSting = moment().format();
+
+        let type: string = "log";
+
+        if (Object.keys(console).contains(args[0])) {
+            type = args.shift();
+        }
+
+        const logMessage = `- ${timezoneDateISOSting} [${type}] ${args.join(" ")}`;
+        const logFilePath = this.settings.logFilePath;
+    
+        const logFile = this.app.vault.getAbstractFileByPath(logFilePath);
+
+        const tFile = this.app.vault.getAbstractFileByPath(this.settings.logFilePath);
+        if (logFile instanceof TFile) {
+            this.app.vault.append(logFile, `${logMessage}\n`);
+        } else {
+            const errorMessage = `${this.manifest.name}: No log file - ${logFilePath}`;
+            new Notice(errorMessage);
+            console.error(errorMessage);
         }
     }
 
