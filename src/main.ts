@@ -166,6 +166,8 @@ export default class RunJSPlugin extends Plugin {
     eventDeleteFile: EventRef;
     eventModifyFile: EventRef;
     eventCreateFile: EventRef;
+    codeFileName: string = "RunJS-codes.json";
+    codeFilePath: string;
 
     constructor(app: App, manifest: PluginManifest) {
         super(app, manifest);
@@ -180,6 +182,7 @@ export default class RunJSPlugin extends Plugin {
         this.refreshLimitTime = 3000;
         this.refreshId = Date.now();
         this.registeredEvents = {};
+        this.codeFilePath = this.manifest.dir + "/" + this.codeFileName;
 
         let oldSymbols = Object.getOwnPropertySymbols(window).filter(elem => elem.toString() == this.runJSSymbol.toString());
         for (let oldSymbol of oldSymbols) {
@@ -238,6 +241,34 @@ export default class RunJSPlugin extends Plugin {
             },
         });
 
+        // A file that stores a list of codes to use before Obsidian starts creating its metadata cache.
+        if (await this.app.vault.adapter.exists(this.codeFilePath)) {
+            const codes = await this.app.vault.adapter.read(this.codeFilePath);
+
+            this.codes = JSON.parse(codes);
+            this.codes.forEach(code => {
+                if (code.type == "module") {
+                    this.codesModule[code.name] = code;
+                } else {
+                    this.codesScript.push(code);
+                }
+            });
+        }
+        
+        for (let autostart of this.settings.autostarts) {
+            if (autostart[1] === true) {
+                this.log("info", `AutoStart - ${autostart[0]}`)
+                this.runCodeByName(autostart[0]);
+            }
+        }
+
+        for (let eventHandler of this.settings.eventHandlers) {
+            if (eventHandler.enable) {
+                this.log("info", `Add EventHandler (${eventHandler.eventObject}: ${eventHandler.eventName}) - ${eventHandler.codeName}`)
+                this.addEventHandler(eventHandler);
+            }
+        }
+
         // This adds a settings tab so the user can configure various aspects of the plugin
         this.settingTab = new RunJSSettingTab(this.app, this);
         this.addSettingTab(this.settingTab);
@@ -257,13 +288,9 @@ export default class RunJSPlugin extends Plugin {
             }
 
             await this.renderCodeListView();
-            
-            this.listview?.update();
 
-            for (let autostart of this.settings.autostarts) {
-                if (autostart[1] === true) {
-                    this.runCodeByName(autostart[0]);
-                }
+            if (this.listview?.update) {
+                this.listview.update();
             }
 
             for (let key in this.settings.commands) {
@@ -276,12 +303,6 @@ export default class RunJSPlugin extends Plugin {
             for (let ribbon_icon of this.settings.ribbonIcons) {
                 if (ribbon_icon.enable) {
                     this.runAddRibbonIcon(ribbon_icon);
-                }
-            }
-
-            for (let eventHandler of this.settings.eventHandlers) {
-                if (eventHandler.enable) {
-                    this.addEventHandler(eventHandler);
                 }
             }
 
@@ -580,7 +601,7 @@ export default class RunJSPlugin extends Plugin {
         return leaf;
     }
 
-    runCodeByName(name: string, ...args: any[]) {
+    async runCodeByName(name: string, ...args: any[]) {
         const code = this.getCodeByName(name);
 
         if (code == null) {
@@ -673,6 +694,8 @@ export default class RunJSPlugin extends Plugin {
         this.codes.push(...codesDataNew.codes);
         this.codesScript.push(...codesDataNew.codesScript);
         Object.assign(this.codesModule, codesDataNew.codesModule);
+
+        await this.app.vault.adapter.write(this.codeFilePath, JSON.stringify(this.codes));
 
         return changed;
     }

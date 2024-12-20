@@ -1,40 +1,43 @@
 export const EventNames: {[key: string]: string[]} = {
     "workspace": [
-        "quick-preview",
-        "resize",
         "active-leaf-change",
-        "file-open",
-        "layout-change",
-        "window-open",
-        "window-close",
-        "css-change",
-        "file-menu",
-        "editor-menu",
-        "editor-change",
-        "editor-paste",
-        "editor-drop",
         "codemirror",
-        "quit"
+        "css-change",
+        "editor-change",
+        "editor-drop",
+        "editor-menu",
+        "editor-paste",
+        "file-menu",
+        "file-open",
+        "files-menu",
+        "layout-change",
+        "layout-ready",
+        "quick-preview",
+        "quit",
+        "resize",
+        "url-menu",
+        "window-close",
+        "window-open",
     ],
     // "workspaceLeaf": [
     //     "pinned-change",
-    //     "group-change"
+    //     "group-change",
     // ],
     "vault": [
         "create",
         "modify",
         "delete",
         "rename",
-        "closed"
+        "closed",
     ],
     "metadataCache": [
         "changed",
         "deleted",
         "resolve",
-        "resolved"
+        "resolved",
     ],
     "RunJS.listview": [
-        "code-menu"
+        "code-menu",
     ]
 };
 
