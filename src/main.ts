@@ -1322,6 +1322,8 @@ export default class RunJSPlugin extends Plugin {
         const targetFile = this.app.vault
             .getFiles()
             .find((f) => f.path === code.file);
+                
+        let app = this.app;
 
         if (targetFile) {
             let leaf = this.app.workspace.getMostRecentLeaf();
@@ -1339,19 +1341,41 @@ export default class RunJSPlugin extends Plugin {
 
                 if (code.form != "codeblock") return;
 
+                let eventRef = this.app.workspace.on("active-leaf-change", function (e) {
+                    app.workspace.offref(eventRef);
+                    setEditorPosition();
+                });
+
                 const viewState = leaf.getViewState();
                 viewState.state.mode = "source";
                 viewState.state.source = true;
                 await leaf.setViewState(viewState);
             }
 
-            // @ts-ignore
-            const editor = this.app.workspace.getActiveViewOfType(MarkdownView)?.sourceMode.cmEditor;
+            function setEditorPosition() {
+                // @ts-ignore
+                const editor = app.workspace.getActiveViewOfType(MarkdownView)?.sourceMode.cmEditor;
 
-            if (editor && code.position) {
-                editor.setCursor(code.position?.start.line);
-                // editor.scrollTo(code.position?.start.line);
-                editor.scrollIntoView({from: code.position?.start, to: code.position?.end});
+                if (editor && code.position) {
+                    editor.setCursor(code.position?.start.line);
+
+                    // const viewState = editor.cm.viewState;
+                    // const linesHalf = Math.floor(viewState.editorHeight / (viewState.heightMap.height / editor.lineCount()) / 2);
+                    // const offsetLine = (code.position?.start?.line ?? 0) + linesHalf;
+                    // const editorPosition = { line: offsetLine, ch: 0 };
+                    // console.log("viewState.editorHeight:", viewState.editorHeight);
+                    // console.log("editor.cm.scrollDOM.clientHeight:", editor.cm.scrollDOM.clientHeight);
+                    // console.log("viewState.heightMap.height:", viewState.heightMap.height);
+                    // console.log("editor.lineCount():", editor.lineCount());
+                    // console.log("linesHalf:", linesHalf);
+                    // console.log("editorPosition:", editorPosition);
+                    // editor.scrollIntoView({ from: editorPosition, to: editorPosition }, true);
+                    // // TODO: error: Measure loop restarted more than 5 times
+
+                    // editor.scrollTo(code.position?.start.line);
+                    // editor.scrollIntoView({ from: code.position?.start, to: code.position?.end });
+                    editor.scrollIntoView({ from: code.position?.start, to: code.position?.start }, true);
+                }
             }
         } else {
             this.log("error", "Cannot find a file:" + code.file);
