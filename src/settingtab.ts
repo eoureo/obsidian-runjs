@@ -913,7 +913,7 @@ export class RunJSSettingTab extends PluginSettingTab {
             .addToggle((toggle) => {
                 toggleComp = toggle
                     .setValue(eventHandlerSetting.enable)
-                    .setTooltip("Enable/Diable")
+                    .setTooltip("Enable/Disable")
                     .onChange((value) => {
                         if (value) {
                             for (let s of settings) {

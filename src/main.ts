@@ -264,7 +264,6 @@ export default class RunJSPlugin extends Plugin {
 
         for (let eventHandler of this.settings.eventHandlers) {
             if (eventHandler.enable) {
-                this.log("info", `Add EventHandler (${eventHandler.eventObject}: ${eventHandler.eventName}) - ${eventHandler.codeName}`)
                 this.addEventHandler(eventHandler);
             }
         }
@@ -1183,8 +1182,15 @@ export default class RunJSPlugin extends Plugin {
         };
         
         let obj;
-        if (setting.eventObject === "RunJS.listview") {
-            obj = this.listview?.listviewEvents;
+        if (setting.eventObject.startsWith("RunJS.")) {
+            if (this.listview) {
+                obj = this.listview?.listviewEvents;
+            } else {
+                this.app.workspace.onLayoutReady(async () => {
+                    this.addEventHandler(setting);
+                });
+                return;
+            }
         } else {
             obj = this.app[(setting.eventObject as unknown) as keyof App];
         }
@@ -1226,7 +1232,14 @@ export default class RunJSPlugin extends Plugin {
         if (setting == null) return;
         
         const eventId = [setting.eventObject, setting.eventName, setting.codeName].join(":");
-        const obj = this.app[(setting.eventObject as unknown) as keyof App];
+        
+        let obj;
+        if (setting.eventObject.startsWith("RunJS.")) {
+            obj = this.listview?.listviewEvents;
+        } else {
+            obj = this.app[(setting.eventObject as unknown) as keyof App];
+        }
+
         if (obj && "offref" in obj && typeof obj.offref === "function") obj.offref(this.registeredEvents[eventId]);
         delete this.registeredEvents[eventId];
         new Notice("Event off: " + eventId);
